@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFT_OT_THE_MOON</title>
+    <title>LIFT_TO_THE_MOON</title>
     <style>
         :root {
             --bg-wall: #0f0f0f;
@@ -446,6 +446,7 @@
         let drawingStarted = false;
         let noButtonRunning = true; 
         let hasImageDropped = false;
+        let whisperInterval = null; // Track interval
 
         // BIGGER HEART SHAPE POINTS
         const heartPoints = [
@@ -543,8 +544,7 @@
                         isLevel2 = true;
                         wind.play().catch(() => {}); 
                         
-                        // Start Background Whispers
-                        setInterval(spawnBackgroundWhisper, 1500);
+                        // NOTE: Whispers removed from here. They start in toggleUI now.
 
                         setTimeout(() => {
                             doorL.classList.remove('closed'); doorR.classList.remove('closed');
@@ -576,7 +576,7 @@
             }, phrases.length * 800 + 1000);
         }
 
-        // --- BACKGROUND WHISPER SPAWNER ---
+        // --- BACKGROUND WHISPER SPAWNER (SLOWED DOWN) ---
         function spawnBackgroundWhisper() {
             if (!isLevel2) return;
             const text = bgWhispers[Math.floor(Math.random() * bgWhispers.length)];
@@ -584,24 +584,23 @@
             span.classList.add('bg-whisper');
             span.innerText = text;
             
-            // Random horizontal pos
             span.style.left = (Math.random() * 80 + 10) + '%';
-            // Random Duration (slow fall)
-            span.style.animationDuration = (Math.random() * 5 + 8) + 's'; 
+            // SLOWER ANIMATION: 20s to 30s fall time
+            span.style.animationDuration = (Math.random() * 10 + 20) + 's'; 
             
             bgTextContainer.appendChild(span);
-            
-            // Clean up
-            setTimeout(() => { span.remove(); }, 13000);
+            setTimeout(() => { span.remove(); }, 35000); // Clean up after long fall
         }
 
-        // --- UI TOGGLE (ZEN MODE) + IMAGE DROP ---
+        // --- UI TOGGLE (ZEN MODE) + IMAGE DROP + WHISPER START ---
         function toggleUI() {
             playSfx();
             if (uiLayer.classList.contains('hidden')) {
+                // Showing UI
                 uiLayer.classList.remove('hidden');
                 toggleBtn.innerText = "↓";
             } else {
+                // Hiding UI (Entering Zen Mode)
                 uiLayer.classList.add('hidden');
                 toggleBtn.innerText = "↑";
                 wipeConstellations(); 
@@ -610,6 +609,14 @@
                 if (!hasImageDropped) {
                     fallingImgContainer.classList.add('dropped');
                     hasImageDropped = true;
+                }
+
+                // START WHISPERS (Only if not already running)
+                if (!whisperInterval) {
+                    // Spawn one immediately
+                    spawnBackgroundWhisper();
+                    // Then every 2 seconds
+                    whisperInterval = setInterval(spawnBackgroundWhisper, 2000);
                 }
             }
         }
