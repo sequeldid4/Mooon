@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIFT_SERVICE_FINAL_V9</title>
+    <style>
+        :root {
+            --bg-wall: #0f0f0f;
+            --panel-color: #2a2a2a;
+            --metal-shine: #3d3d3d;
+            --light-off: #111;
+            --valentine-lit: #ff0040;
+            --success-green: #00ff41;
+        }
+
+        body {
+            background-color: var(--bg-wall);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Developer Signature */
+        .dev-sig {
+            position: fixed; bottom: 15px; right: 20px; 
+            font-family: 'Courier New', monospace; font-size: 12px; 
+            opacity: 0.2; user-select: none; pointer-events: none; 
+            color: #ccc; z-index: 9999;
+        }
+
+        /* --- LEVEL 1: ELEVATOR PANEL --- */
+        .panel {
+            width: 200px;
+            background: linear-gradient(135deg, var(--panel-color), #1a1a1a);
+            padding: 20px;
+            padding-top: 60px;
+            border-radius: 4px;
+            border: 2px solid #000;
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,0.1), 0 0 30px rgba(0,0,0,0.8);
+            position: relative;
+            z-index: 10;
+            transition: opacity 1s, transform 3s ease-in;
+        }
+
+        /* Red Background Light */
+        .flicker-bg {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140%; height: 100%;
+            background: radial-gradient(ellipse at center, rgba(255, 0, 64, 0.3) 0%, rgba(0,0,0,0) 70%);
+            z-index: 0; pointer-events: none; border-radius: 50%;
+            animation: glitch-flicker 2s infinite;
+        }
+        @keyframes glitch-flicker {
+            0% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.05); }
+            100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* Flickering Heart <3 */
+        .neon-heart {
+            position: absolute; top: -50px; left: 50%;
+            transform: translateX(-50%) rotate(-90deg); 
+            color: var(--valentine-lit);
+            font-family: 'Courier New', monospace; font-weight: bold; font-size: 2rem;
+            text-shadow: 0 0 5px var(--valentine-lit);
+            animation: flicker-hard 3s infinite; pointer-events: none; white-space: nowrap;
+        }
+        @keyframes flicker-hard {
+            0%, 100% { opacity: 0.2; text-shadow: none; }
+            50% { opacity: 1; text-shadow: 0 0 10px var(--valentine-lit); }
+        }
+
+        /* Display Screen */
+        .display {
+            background: #000; color: var(--valentine-lit); height: 40px;
+            margin-bottom: 20px; display: flex; align-items: center; justify-content: center;
+            font-family: 'Courier New', monospace; font-weight: bold; font-size: 1.2rem;
+            border: 1px inset #333; z-index: 5; position: relative;
+        }
+
+        /* Keypad Grid */
+        .grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+            position: relative; z-index: 10; 
+        }
+
+        .btn {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, var(--metal-shine), #111);
+            border: 1px solid #000; display: flex; align-items: center; justify-content: center;
+            color: #444; font-weight: bold; font-size: 1.2rem; cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5); transition: all 0.05s; margin: auto;
+        }
+        .btn:active { transform: translateY(2px); background: #555; color: #fff; }
+
+        .btn.missing { background: #151515; color: #333; font-size: 0.8rem; font-style: italic; }
+        
+        /* Aggressive Flicker for Button 14 */
+        .btn.v14 { 
+            color: rgba(255, 0, 64, 0.8); 
+            border: 1px solid #ff0040; 
+            position: relative;
+            animation: btn-pulse 1s infinite alternate;
+        }
+        @keyframes btn-pulse {
+            0% { box-shadow: 0 0 5px #ff0040; border-color: #550000; color: #550000; }
+            100% { box-shadow: 0 0 15px #ff0040; border-color: #ff0040; color: #ff0040; }
+        }
+
+        /* --- DOORS --- */
+        .door {
+            position: fixed; top: 0; width: 51%; height: 100%;
+            background: #080808; z-index: 100;
+            transition: transform 2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            border: 1px solid #111;
+        }
+        .door-left { left: 0; transform: translateX(-100%); border-right: 2px solid #222; }
+        .door-right { right: 0; transform: translateX(100%); border-left: 2px solid #222; }
+        .door.closed { transform: translateX(0); }
+
+        /* --- LEVEL 2: ROOFTOP SCENE --- */
+        .rooftop-scene {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, #020205 0%, #1a0505 100%);
+            z-index: 1; 
+            display: none;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        /* --- MOON (AUDIO VISUALIZER) --- */
+        .moon {
+            position: absolute; top: 10%; right: 15%;
+            width: 120px; 
+            height: 120px;
+            background-image: url('moon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            filter: drop-shadow(0 0 15px rgba(200, 200, 200, 0.3));
+            opacity: 0.9;
+        }
+
+        /* The Visualizer Animation for Moon (Bass Kick) */
+        .visualizer-active .moon {
+            animation: bass-pulse 0.8s infinite ease-in-out;
+        }
+
+        @keyframes bass-pulse {
+            0% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(200, 200, 200, 0.3)); }
+            5% { transform: scale(1.08); filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.5)); } /* Kick! */
+            40% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(200, 200, 200, 0.3)); }
+            100% { transform: scale(1); }
+        }
+
+        /* City Silhouette (AUDIO VISUALIZER) */
+        .city {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 30%;
+            background-color: #000;
+            clip-path: polygon(
+                0% 100%, 0% 40%, 10% 40%, 10% 20%, 15% 20%, 15% 50%, 
+                25% 50%, 25% 10%, 35% 10%, 35% 60%, 45% 60%, 45% 30%, 
+                55% 30%, 55% 70%, 65% 70%, 65% 20%, 75% 20%, 75% 50%, 
+                85% 50%, 85% 10%, 95% 10%, 95% 100%
+            );
+            z-index: 2; pointer-events: none;
+        }
+
+        /* The Visualizer Animation for City (High Frequencies) */
+        .visualizer-active .city {
+            animation: city-flicker 0.2s infinite;
+        }
+
+        @keyframes city-flicker {
+            0% { opacity: 1; filter: brightness(1); }
+            50% { opacity: 0.95; filter: brightness(1.2); } /* Tiny flicker */
+            100% { opacity: 1; filter: brightness(1); }
+        }
+        
+        .railing {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 150px;
+            border-top: 10px solid #111;
+            background: repeating-linear-gradient(90deg, #111, #111 10px, transparent 10px, transparent 100px);
+            z-index: 5; pointer-events: none;
+        }
+
+        /* Aesthetic Symbol Trail */
+        .trail-symbol {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 20px;
+            pointer-events: none;
+            animation: fade-drop 1.5s forwards;
+            text-shadow: 0 0 5px #fff;
+        }
+        @keyframes fade-drop {
+            0% { opacity: 1; transform: scale(1) translateY(0); }
+            100% { opacity: 0; transform: scale(0.5) translateY(50px); }
+        }
+
+        /* --- THE VIBEY SKY TEXT --- */
+        .sky-msg-container {
+            position: absolute;
+            top: 15%; 
+            width: 100%;
+            height: 100px;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+            display: none; 
+        }
+        
+        .sky-text {
+            position: absolute;
+            right: -150%; 
+            font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; 
+            font-size: 2rem;
+            letter-spacing: 2px;
+            color: #fff;
+            text-shadow: 
+                0 0 5px #fff,
+                0 0 10px #ffb3c6,
+                0 0 20px #ff0040,
+                0 0 40px #ff0040;
+            white-space: nowrap;
+            opacity: 0.9;
+            transform: rotate(-2deg);
+        }
+        
+        .animate-sky { display: block; }
+        .animate-sky .sky-text { animation: dreamy-fly 18s linear forwards; }
+        
+        @keyframes dreamy-fly {
+            0% { right: -50%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { right: 120%; opacity: 0; } 
+        }
+
+        /* --- MESSAGES --- */
+        .marquee-container {
+            position: fixed; top: 50%; left: 0; width: 100%;
+            transform: translateY(-50%); z-index: 200;
+            overflow: hidden; pointer-events: none; display: none;
+        }
+        .marquee-text {
+            font-family: 'Courier New', monospace; font-size: 3rem; font-weight: bold;
+            color: var(--valentine-lit); text-shadow: 0 0 10px var(--valentine-lit);
+            white-space: nowrap; display: inline-block; transform: translateX(100vw);
+        }
+        .marquee-container.active { display: block; }
+        .marquee-container.active .marquee-text { animation: scrollLeft 6s linear 1 forwards; }
+        @keyframes scrollLeft { 100% { transform: translateX(-100%); } }
+
+        .level2-msg {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-family: 'Courier New', monospace; color: var(--success-green);
+            font-size: 2rem; text-shadow: 0 0 20px var(--success-green);
+            opacity: 0; z-index: 200; text-align: center; transition: opacity 1s;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="dev-sig">~sql</div>
+
+    <audio id="bg-music" src="song.mp3" loop></audio>
+    <audio id="level2-music" src="song1.mp3" loop></audio> <audio id="btn-sfx" src="vfx.mp3"></audio>
+    <audio id="wind-sfx" src="wind.mp3" loop></audio>
+
+    <div class="door door-left" id="doorL"></div>
+    <div class="door door-right" id="doorR"></div>
+
+    <div class="rooftop-scene" id="rooftop">
+        <div class="moon"></div>
+        
+        <div class="city"></div>
+        <div class="railing"></div>
+        
+        <div class="sky-msg-container" id="skyMsgBox">
+            <div class="sky-text">I got a person to share my thoughts with :)</div>
+        </div>
+    </div>
+
+    <div class="marquee-container" id="marqueeBox">
+        <div class="marquee-text">Bruh this aint for u</div>
+    </div>
+
+    <div class="level2-msg" id="lvl2Msg">
+        ACCESS GRANTED<br>GOING UP
+    </div>
+
+    <div class="panel" id="mainPanel">
+        <div class="flicker-bg"></div>
+        <div class="neon-heart">&lt;3</div>
+        <div class="display" id="screen">--</div>
+        
+        <div class="grid">
+            <div class="btn" onclick="press(7)">7</div>
+            <div class="btn" onclick="press(8)">8</div>
+            <div class="btn" onclick="press(9)">9</div>
+            <div class="btn" onclick="press(10)">10</div>
+            <div class="btn" onclick="press(11)">11</div>
+            <div class="btn" onclick="press(12)">12</div>
+            <div class="btn missing" onclick="press(13)">XIII</div> 
+            <div class="btn v14" id="btn14" onclick="press(14)">14</div>
+        </div>
+    </div>
+
+    <script>
+        const password = [12, 11, 13, 12, 13, 11];
+        let userPattern = [];
+        let isProcessing = false;
+        let musicStarted = false;
+        let isLevel2 = false;
+
+        const screen = document.getElementById('screen');
+        const doorL = document.getElementById('doorL');
+        const doorR = document.getElementById('doorR');
+        const panel = document.getElementById('mainPanel');
+        const lvl2Msg = document.getElementById('lvl2Msg');
+        const rooftop = document.getElementById('rooftop');
+        const skyMsgBox = document.getElementById('skyMsgBox');
+        
+        const musicLvl1 = document.getElementById('bg-music');
+        const musicLvl2 = document.getElementById('level2-music');
+        const sfx = document.getElementById('btn-sfx');
+        const wind = document.getElementById('wind-sfx');
+
+        const symbols = ['✧', '⋆', '♡', '☾', '☁', '†', '⚕', '⚘', '⚚', '★', '☆', '✦'];
+
+        function initMusic() {
+            if (!musicStarted) {
+                musicLvl1.volume = 0.4;
+                musicLvl1.play().catch(() => {});
+                musicStarted = true;
+            }
+        }
+
+        function press(val) {
+            initMusic();
+            sfx.currentTime = 0; sfx.play().catch(() => {});
+            
+            if (isProcessing) return;
+
+            if (val === 14) {
+                checkPassword();
+            } else {
+                userPattern.push(val);
+                let visual = "";
+                for(let i=0; i<userPattern.length; i++) { visual += "* "; }
+                screen.innerText = visual.substring(0, 12); 
+            }
+        }
+
+        function checkPassword() {
+            isProcessing = true;
+            const attempt = userPattern.slice(-6); 
+            const isCorrect = attempt.length === 6 && attempt.every((v, i) => v === password[i]);
+
+            if (isCorrect) {
+                triggerLevel2();
+            } else {
+                triggerFail();
+            }
+        }
+
+        function triggerFail() {
+            screen.style.color = "#ff0040"; screen.innerText = "DENIED";
+            setTimeout(() => {
+                doorL.classList.add('closed'); doorR.classList.add('closed');
+                panel.style.opacity = "0";
+                setTimeout(() => { document.getElementById('marqueeBox').classList.add('active'); }, 1000);
+            }, 800);
+        }
+
+        function triggerLevel2() {
+            screen.style.color = "#00ff41"; screen.innerText = "LEVEL 2";
+            document.querySelector('.neon-heart').style.color = "#00ff41";
+            
+            setTimeout(() => {
+                doorL.classList.add('closed'); doorR.classList.add('closed');
+                
+                setTimeout(() => {
+                    panel.style.display = "none"; 
+                    lvl2Msg.style.opacity = "1"; 
+                    
+                    // --- SWITCH MUSIC HERE ---
+                    const fadeAudio = setInterval(() => {
+                        if (musicLvl1.volume > 0.1) {
+                            musicLvl1.volume -= 0.1;
+                        } else {
+                            clearInterval(fadeAudio);
+                            musicLvl1.pause();
+                            
+                            // Start Level 2 Song
+                            musicLvl2.volume = 0.5;
+                            musicLvl2.play().catch(() => {});
+                            
+                            // Enable Visualizer
+                            rooftop.classList.add('visualizer-active');
+                        }
+                    }, 200);
+
+                    setTimeout(() => {
+                        lvl2Msg.style.opacity = "0";
+                        rooftop.style.display = "block"; 
+                        isLevel2 = true;
+                        wind.play().catch(() => {}); 
+
+                        setTimeout(() => {
+                            doorL.classList.remove('closed');
+                            doorR.classList.remove('closed');
+                            skyMsgBox.classList.add('animate-sky');
+                        }, 1000);
+
+                    }, 3000);
+                }, 1000);
+            }, 1000);
+        }
+
+        function handleMove(e) {
+            if (!isLevel2) return;
+
+            const x = e.touches ? e.touches[0].clientX : e.clientX;
+            const y = e.touches ? e.touches[0].clientY : e.clientY;
+
+            const span = document.createElement('span');
+            span.classList.add('trail-symbol');
+            span.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+            
+            const size = Math.random() * 20 + 10;
+            span.style.fontSize = size + 'px';
+            span.style.left = x + 'px';
+            span.style.top = y + 'px';
+            
+            span.style.transform = `rotate(${Math.random() * 30 - 15}deg)`;
+
+            rooftop.appendChild(span);
+            setTimeout(() => { span.remove(); }, 1500);
+        }
+
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('touchmove', handleMove);
+
+    </script>
+</body>
+</html>
