@@ -193,6 +193,35 @@
             transform: translateY(100vh); 
         }
 
+        /* --- FALLING IMG.PNG (BIGGER AND CENTERED) --- */
+        #falling-img-container {
+            position: absolute; 
+            top: -150%; /* Start way above screen */
+            left: 50%; 
+            /* Centered horizontally, no rotation */
+            transform: translateX(-50%);
+            z-index: 15;
+            /* Transition top to go all the way down */
+            transition: top 4s ease-in; 
+            /* Much bigger width, responsive */
+            width: 60vw;
+            max-width: 600px;
+            pointer-events: none;
+        }
+        
+        #falling-img-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            filter: brightness(0.9);
+        }
+
+        /* Class added to trigger the long drop */
+        #falling-img-container.dropped {
+            top: 200vh; /* Way below the screen */
+        }
+
         /* --- FALLING TEXT --- */
         .falling-text-container {
             position: absolute; top: 30%; width: 100%; text-align: center;
@@ -302,9 +331,7 @@
     <div class="dev-sig">~sql</div>
 
     <audio id="bg-music" src="song.mp3" loop></audio>
-    
     <audio id="level2-music" src="song1.mp3"></audio>
-    
     <audio id="btn-sfx" src="vfx.mp3"></audio>
     <audio id="wind-sfx" src="wind.mp3" loop></audio>
 
@@ -328,6 +355,10 @@
         </svg>
         
         <div class="railing"></div>
+
+        <div id="falling-img-container">
+            <img src="img.png" alt="Special Memory">
+        </div>
 
         <div id="ui-layer">
             <div class="falling-text-container" id="textContainer"></div>
@@ -389,13 +420,14 @@
         const uiLayer = document.getElementById('ui-layer');
         const toggleBtn = document.getElementById('toggleBtn');
         const controls = document.getElementById('controls');
+        const fallingImgContainer = document.getElementById('falling-img-container');
         
         const musicLvl1 = document.getElementById('bg-music');
         const musicLvl2 = document.getElementById('level2-music');
         const sfx = document.getElementById('btn-sfx');
         const wind = document.getElementById('wind-sfx');
 
-        // PLAYLIST CONFIG
+        // PLAYLIST
         const playlist = ['song1.mp3', 'song2.mp3', 'song3.mp3'];
         let currentTrackIndex = 0;
 
@@ -407,10 +439,17 @@
         let heartIndex = 0;
         let drawingStarted = false;
         let noButtonRunning = true; 
+        let hasImageDropped = false;
 
+        // BIGGER HEART SHAPE POINTS (Rounded and Wide)
         const heartPoints = [
-            {x: 0, y: -0.2}, {x: -0.2, y: -0.4}, {x: -0.45, y: -0.15},
-            {x: 0, y: 0.4}, {x: 0.45, y: -0.15}, {x: 0.2, y: -0.4}, {x: 0, y: -0.2}
+            {x: 0, y: -0.3},      // 0. Top Dip (Higher up)
+            {x: -0.3, y: -0.55},  // 1. Top Left Lobe (Wider)
+            {x: -0.55, y: -0.15}, // 2. Left Side (Widest point)
+            {x: 0, y: 0.55},      // 3. Bottom Tip (Lower)
+            {x: 0.55, y: -0.15},  // 4. Right Side
+            {x: 0.3, y: -0.55},   // 5. Top Right Lobe
+            {x: 0, y: -0.3}       // 6. Close loop
         ];
 
         const symbols = ['✧', '⋆', '♡', '☾', '☁', '†', '⚕', '⚘', '⚚', '★', '☆', '✦'];
@@ -467,7 +506,6 @@
                     panel.style.display = "none"; 
                     lvl2Msg.style.opacity = "1"; 
                     
-                    // --- MUSIC FADE & PLAYLIST LOGIC ---
                     const fadeAudio = setInterval(() => {
                         if (musicLvl1.volume > 0.1) { 
                             musicLvl1.volume -= 0.1; 
@@ -475,14 +513,12 @@
                             clearInterval(fadeAudio); 
                             musicLvl1.pause();
                             
-                            // Initialize Level 2 Music
                             currentTrackIndex = 0;
                             musicLvl2.src = playlist[currentTrackIndex];
-                            musicLvl2.volume = 0.2; // Start low
+                            musicLvl2.volume = 0.2;
                             musicLvl2.play().catch(() => {});
                             rooftop.classList.add('visualizer-active');
 
-                            // Fade In Logic
                             const fadeIn = setInterval(() => {
                                 if (musicLvl2.volume < 1.0) {
                                     musicLvl2.volume = Math.min(1.0, musicLvl2.volume + 0.2);
@@ -507,7 +543,6 @@
             }, 1000);
         }
 
-        // --- PLAYLIST ENDED LISTENER ---
         musicLvl2.addEventListener('ended', () => {
             currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
             musicLvl2.src = playlist[currentTrackIndex];
@@ -529,7 +564,7 @@
             }, phrases.length * 800 + 1000);
         }
 
-        // --- UI TOGGLE (ZEN MODE) ---
+        // --- UI TOGGLE (ZEN MODE) + IMAGE DROP ---
         function toggleUI() {
             playSfx();
             if (uiLayer.classList.contains('hidden')) {
@@ -539,6 +574,12 @@
                 uiLayer.classList.add('hidden');
                 toggleBtn.innerText = "↑";
                 wipeConstellations(); 
+                
+                // Trigger the Image Drop ONLY if it hasn't dropped yet
+                if (!hasImageDropped) {
+                    fallingImgContainer.classList.add('dropped');
+                    hasImageDropped = true;
+                }
             }
         }
 
