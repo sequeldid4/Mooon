@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFT_SERVICE_FINAL_V33</title>
+    <title>LIFT_SERVICE_FINAL_V34</title>
     <style>
         :root {
             --bg-wall: #0f0f0f;
@@ -231,6 +231,7 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 2; /* Ensure it's on top */
             cursor: pointer;
+            touch-action: none; /* CRITICAL: Prevents scrolling/gestures on the canvas */
         }
 
         /* --- FALLING TEXT (MAIN) --- */
@@ -489,24 +490,22 @@
         xboxImg.src = 'giftcard.png'; // Updated Name
         
         xboxImg.onload = () => {
-            // Setup canvas when image loads
             canvas.width = scratchCardContainer.offsetWidth;
             canvas.height = scratchCardContainer.offsetHeight;
             ctx.drawImage(xboxImg, 0, 0, canvas.width, canvas.height);
         };
         
-        // Fallback: If image fails, fill with Green so it still works
         xboxImg.onerror = () => {
             canvas.width = scratchCardContainer.offsetWidth;
             canvas.height = scratchCardContainer.offsetHeight;
-            ctx.fillStyle = "#107c10"; // Xbox Green
+            ctx.fillStyle = "#107c10"; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.font = "20px monospace";
             ctx.fillStyle = "white";
             ctx.fillText("SCRATCH ME", 50, 100);
         };
 
-        // --- SCRATCH LOGIC ---
+        // --- SCRATCH LOGIC (FIXED FOR MOBILE CENTER) ---
         let isScratching = false;
 
         function getMousePos(e) {
@@ -521,11 +520,11 @@
 
         function scratch(e) {
             if (!isScratching) return;
-            e.preventDefault(); // Stop scrolling
+            e.preventDefault(); 
             const pos = getMousePos(e);
             ctx.globalCompositeOperation = 'destination-out';
             ctx.beginPath();
-            ctx.arc(pos.x, pos.y, 30, 0, Math.PI * 2); // Bigger brush
+            ctx.arc(pos.x, pos.y, 30, 0, Math.PI * 2); 
             ctx.fill();
         }
 
@@ -533,9 +532,14 @@
         canvas.addEventListener('mouseup', () => isScratching = false);
         canvas.addEventListener('mousemove', scratch);
         
-        canvas.addEventListener('touchstart', () => isScratching = true);
+        // CRITICAL FIX: preventDefault on touchstart prevents text selection/magnifier
+        canvas.addEventListener('touchstart', (e) => {
+            isScratching = true;
+            e.preventDefault(); 
+        }, { passive: false });
+        
         canvas.addEventListener('touchend', () => isScratching = false);
-        canvas.addEventListener('touchmove', scratch);
+        canvas.addEventListener('touchmove', scratch, { passive: false });
 
 
         function initMusic() {
@@ -647,7 +651,7 @@
             }, phrases.length * 800 + 1000);
         }
 
-        // --- BACKGROUND WHISPER SPAWNER (FIXED ZONES) ---
+        // --- BACKGROUND WHISPER SPAWNER (FIXED ZONES: 0-10% and 90-100%) ---
         function spawnBackgroundWhisper() {
             if (!isLevel2) return;
             const text = bgWhispers[Math.floor(Math.random() * bgWhispers.length)];
@@ -655,12 +659,12 @@
             span.classList.add('bg-whisper');
             span.innerText = text;
             
-            // Random: Either Left (0-25%) OR Right (75-100%)
+            // Random: Either Left (0-10%) OR Right (90-100%)
             const isLeft = Math.random() < 0.5;
             if (isLeft) {
-                span.style.left = (Math.random() * 25) + '%';
+                span.style.left = (Math.random() * 10) + '%';
             } else {
-                span.style.left = (Math.random() * 25 + 75) + '%';
+                span.style.left = (Math.random() * 10 + 90) + '%';
             }
 
             span.style.animationDuration = (Math.random() * 10 + 20) + 's'; 
@@ -687,7 +691,6 @@
                     setTimeout(() => {
                         canvas.width = scratchCardContainer.offsetWidth;
                         canvas.height = scratchCardContainer.offsetHeight;
-                        // Draw image (or fallback color if image failed)
                         if (xboxImg.complete && xboxImg.naturalHeight !== 0) {
                             ctx.drawImage(xboxImg, 0, 0, canvas.width, canvas.height);
                         } else {
