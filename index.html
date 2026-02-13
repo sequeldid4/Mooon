@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFT_TO_THE_MOON</title>
+    <title>LIFT_SERVICE_FINAL_V32</title>
     <style>
         :root {
             --bg-wall: #0f0f0f;
@@ -193,24 +193,44 @@
             transform: translateY(100vh); 
         }
 
-        /* --- FALLING IMG.PNG (BIGGER AND CENTERED) --- */
-        #falling-img-container {
+        /* --- SCRATCH CARD CONTAINER --- */
+        #scratch-card-container {
             position: absolute; 
-            top: -150%; 
+            top: -150%; /* Start above */
             left: 50%; 
             transform: translateX(-50%);
-            z-index: 15;
-            transition: top 4s ease-in; 
-            width: 60vw;
-            max-width: 600px;
-            pointer-events: none;
+            z-index: 50; /* Above everything */
+            width: 80vw; max-width: 500px;
+            height: 300px; /* Adjust based on image ratio */
+            transition: top 2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: auto;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            background: #111;
         }
-        
-        #falling-img-container img {
-            width: 100%; height: auto; border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); filter: brightness(0.9);
+        #scratch-card-container.dropped { top: 25%; }
+
+        /* The Secret Code Underneath */
+        .secret-code {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: linear-gradient(45deg, #0f2027, #203a43, #2c5364);
+            color: #00ff41; font-family: 'Courier New', monospace;
+            text-align: center;
         }
-        #falling-img-container.dropped { top: 200vh; }
+        .code-title { font-size: 1.2rem; color: #fff; margin-bottom: 10px; }
+        .code-text { 
+            font-size: 1.5rem; font-weight: bold; letter-spacing: 2px;
+            background: rgba(0,0,0,0.5); padding: 10px; border: 1px dashed #00ff41;
+            user-select: text; /* Allow copying */
+        }
+
+        /* The Scratchable Surface */
+        #scratch-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="10"/></svg>') 16 16, auto;
+        }
 
         /* --- FALLING TEXT (MAIN) --- */
         .falling-text-container {
@@ -238,19 +258,14 @@
             pointer-events: none; z-index: 1; overflow: hidden;
         }
         .bg-whisper {
-            position: absolute;
-            font-family: 'Brush Script MT', cursive; 
-            color: rgba(255, 255, 255, 0.4); 
-            text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
-            white-space: nowrap;
-            opacity: 0;
-            font-size: 1.2rem;
+            position: absolute; font-family: 'Brush Script MT', cursive; 
+            color: rgba(255, 255, 255, 0.4); text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+            white-space: nowrap; opacity: 0; font-size: 1.2rem;
             animation: whisper-fall linear forwards;
         }
         @keyframes whisper-fall {
             0% { transform: translateY(-50px) rotate(0deg); opacity: 0; }
-            10% { opacity: 0.5; }
-            90% { opacity: 0.5; }
+            10% { opacity: 0.5; } 90% { opacity: 0.5; }
             100% { transform: translateY(110vh) rotate(5deg); opacity: 0; }
         }
 
@@ -361,8 +376,11 @@
         
         <div class="railing"></div>
 
-        <div id="falling-img-container">
-            <img src="img.png" alt="Special Memory">
+        <div id="scratch-card-container">
+            <div class="secret-code">
+                <div class="code-title">GIFT UNLOCKED</div>
+                <div class="code-text">XXXX-XXXX-XXXX-XXXX</div> </div>
+            <canvas id="scratch-canvas"></canvas>
         </div>
 
         <div id="ui-layer">
@@ -425,8 +443,10 @@
         const uiLayer = document.getElementById('ui-layer');
         const toggleBtn = document.getElementById('toggleBtn');
         const controls = document.getElementById('controls');
-        const fallingImgContainer = document.getElementById('falling-img-container');
+        const scratchCardContainer = document.getElementById('scratch-card-container');
         const bgTextContainer = document.getElementById('bgTextContainer');
+        const canvas = document.getElementById('scratch-canvas');
+        const ctx = canvas.getContext('2d');
         
         const musicLvl1 = document.getElementById('bg-music');
         const musicLvl2 = document.getElementById('level2-music');
@@ -445,8 +465,8 @@
         let heartIndex = 0;
         let drawingStarted = false;
         let noButtonRunning = true; 
-        let hasImageDropped = false;
-        let whisperInterval = null; // Track interval
+        let hasCardDropped = false;
+        let whisperInterval = null; 
 
         // BIGGER HEART SHAPE POINTS
         const heartPoints = [
@@ -457,12 +477,52 @@
         const symbols = ['✧', '⋆', '♡', '☾', '☁', '†', '⚕', '⚘', '⚚', '★', '☆', '✦'];
         const phrases = ["Im", "glad", "that", "u r", "my", "friend", "arent u?"];
         
-        // BACKGROUND WHISPERS LIST
         const bgWhispers = [
             "What time is it rn?", "Oumaima?", "Hows the song?", "plzzzz",
             "i want to learn German!", "tell me more abt u", "u happy:)", 
             "Dont be sad:(", "no way u r Oumaima!", "Wht am i doin rn ", "Im a MAN"
         ];
+
+        // --- SCRATCH CARD INIT ---
+        const xboxImg = new Image();
+        xboxImg.src = 'xbox.png'; // Make sure this file exists!
+        xboxImg.onload = () => {
+            canvas.width = scratchCardContainer.offsetWidth;
+            canvas.height = scratchCardContainer.offsetHeight;
+            ctx.drawImage(xboxImg, 0, 0, canvas.width, canvas.height);
+        };
+
+        // --- SCRATCH LOGIC ---
+        let isScratching = false;
+
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function scratch(e) {
+            if (!isScratching) return;
+            e.preventDefault(); // Stop scrolling on touch
+            const pos = getMousePos(e);
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 25, 0, Math.PI * 2); // Brush size
+            ctx.fill();
+        }
+
+        canvas.addEventListener('mousedown', () => isScratching = true);
+        canvas.addEventListener('mouseup', () => isScratching = false);
+        canvas.addEventListener('mousemove', scratch);
+        
+        canvas.addEventListener('touchstart', () => isScratching = true);
+        canvas.addEventListener('touchend', () => isScratching = false);
+        canvas.addEventListener('touchmove', scratch);
+
 
         function initMusic() {
             if (!musicStarted) {
@@ -543,9 +603,6 @@
                         rooftop.style.display = "block"; 
                         isLevel2 = true;
                         wind.play().catch(() => {}); 
-                        
-                        // NOTE: Whispers removed from here. They start in toggleUI now.
-
                         setTimeout(() => {
                             doorL.classList.remove('closed'); doorR.classList.remove('closed');
                             triggerFallingText();
@@ -576,46 +633,44 @@
             }, phrases.length * 800 + 1000);
         }
 
-        // --- BACKGROUND WHISPER SPAWNER (SLOWED DOWN) ---
+        // --- BACKGROUND WHISPER SPAWNER ---
         function spawnBackgroundWhisper() {
             if (!isLevel2) return;
             const text = bgWhispers[Math.floor(Math.random() * bgWhispers.length)];
             const span = document.createElement('div');
             span.classList.add('bg-whisper');
             span.innerText = text;
-            
             span.style.left = (Math.random() * 80 + 10) + '%';
-            // SLOWER ANIMATION: 20s to 30s fall time
             span.style.animationDuration = (Math.random() * 10 + 20) + 's'; 
-            
             bgTextContainer.appendChild(span);
-            setTimeout(() => { span.remove(); }, 35000); // Clean up after long fall
+            setTimeout(() => { span.remove(); }, 35000);
         }
 
-        // --- UI TOGGLE (ZEN MODE) + IMAGE DROP + WHISPER START ---
+        // --- UI TOGGLE (ZEN MODE) + CARD DROP ---
         function toggleUI() {
             playSfx();
             if (uiLayer.classList.contains('hidden')) {
-                // Showing UI
                 uiLayer.classList.remove('hidden');
                 toggleBtn.innerText = "↓";
             } else {
-                // Hiding UI (Entering Zen Mode)
                 uiLayer.classList.add('hidden');
                 toggleBtn.innerText = "↑";
                 wipeConstellations(); 
                 
-                // Trigger Image Drop
-                if (!hasImageDropped) {
-                    fallingImgContainer.classList.add('dropped');
-                    hasImageDropped = true;
+                // Trigger Card Drop
+                if (!hasCardDropped) {
+                    scratchCardContainer.classList.add('dropped');
+                    hasCardDropped = true;
+                    // Resize canvas once dropped to ensure fit
+                    setTimeout(() => {
+                        canvas.width = scratchCardContainer.offsetWidth;
+                        canvas.height = scratchCardContainer.offsetHeight;
+                        ctx.drawImage(xboxImg, 0, 0, canvas.width, canvas.height);
+                    }, 2100);
                 }
 
-                // START WHISPERS (Only if not already running)
                 if (!whisperInterval) {
-                    // Spawn one immediately
                     spawnBackgroundWhisper();
-                    // Then every 2 seconds
                     whisperInterval = setInterval(spawnBackgroundWhisper, 2000);
                 }
             }
@@ -727,7 +782,8 @@
 
         // --- MANUAL DRAWING ---
         rooftop.addEventListener('mousedown', (e) => {
-            if(e.target.closest('.control-btn') || e.target.tagName === 'BUTTON') return;
+            // Prevent drawing on the scratch card or buttons
+            if(e.target.closest('.control-btn') || e.target.tagName === 'BUTTON' || e.target.id === 'scratch-canvas') return;
             createStarAt(e.clientX, e.clientY, !!lastPoint);
         });
 
