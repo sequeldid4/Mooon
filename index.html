@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFT_SERVICE_FINAL_V32</title>
+    <title>LIFT_SERVICE_FINAL_V33</title>
     <style>
         :root {
             --bg-wall: #0f0f0f;
@@ -199,9 +199,9 @@
             top: -150%; /* Start above */
             left: 50%; 
             transform: translateX(-50%);
-            z-index: 50; /* Above everything */
+            z-index: 50; 
             width: 80vw; max-width: 500px;
-            height: 300px; /* Adjust based on image ratio */
+            height: 300px; 
             transition: top 2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             pointer-events: auto;
             border-radius: 15px;
@@ -223,13 +223,14 @@
         .code-text { 
             font-size: 1.5rem; font-weight: bold; letter-spacing: 2px;
             background: rgba(0,0,0,0.5); padding: 10px; border: 1px dashed #00ff41;
-            user-select: text; /* Allow copying */
+            user-select: text; 
         }
 
         /* The Scratchable Surface */
         #scratch-canvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="10"/></svg>') 16 16, auto;
+            z-index: 2; /* Ensure it's on top */
+            cursor: pointer;
         }
 
         /* --- FALLING TEXT (MAIN) --- */
@@ -252,7 +253,7 @@
             100% { opacity: 1; transform: translateY(0) rotate(0deg); }
         }
 
-        /* --- BACKGROUND FALLING WHISPERS --- */
+        /* --- BACKGROUND FALLING WHISPERS (LEFT & RIGHT ONLY) --- */
         .bg-text-container {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 1; overflow: hidden;
@@ -483,13 +484,26 @@
             "Dont be sad:(", "no way u r Oumaima!", "Wht am i doin rn ", "Im a MAN"
         ];
 
-        // --- SCRATCH CARD INIT ---
+        // --- SCRATCH CARD INIT (FIXED) ---
         const xboxImg = new Image();
-        xboxImg.src = 'xbox.png'; // Make sure this file exists!
+        xboxImg.src = 'giftcard.png'; // Updated Name
+        
         xboxImg.onload = () => {
+            // Setup canvas when image loads
             canvas.width = scratchCardContainer.offsetWidth;
             canvas.height = scratchCardContainer.offsetHeight;
             ctx.drawImage(xboxImg, 0, 0, canvas.width, canvas.height);
+        };
+        
+        // Fallback: If image fails, fill with Green so it still works
+        xboxImg.onerror = () => {
+            canvas.width = scratchCardContainer.offsetWidth;
+            canvas.height = scratchCardContainer.offsetHeight;
+            ctx.fillStyle = "#107c10"; // Xbox Green
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.font = "20px monospace";
+            ctx.fillStyle = "white";
+            ctx.fillText("SCRATCH ME", 50, 100);
         };
 
         // --- SCRATCH LOGIC ---
@@ -507,11 +521,11 @@
 
         function scratch(e) {
             if (!isScratching) return;
-            e.preventDefault(); // Stop scrolling on touch
+            e.preventDefault(); // Stop scrolling
             const pos = getMousePos(e);
             ctx.globalCompositeOperation = 'destination-out';
             ctx.beginPath();
-            ctx.arc(pos.x, pos.y, 25, 0, Math.PI * 2); // Brush size
+            ctx.arc(pos.x, pos.y, 30, 0, Math.PI * 2); // Bigger brush
             ctx.fill();
         }
 
@@ -633,14 +647,22 @@
             }, phrases.length * 800 + 1000);
         }
 
-        // --- BACKGROUND WHISPER SPAWNER ---
+        // --- BACKGROUND WHISPER SPAWNER (FIXED ZONES) ---
         function spawnBackgroundWhisper() {
             if (!isLevel2) return;
             const text = bgWhispers[Math.floor(Math.random() * bgWhispers.length)];
             const span = document.createElement('div');
             span.classList.add('bg-whisper');
             span.innerText = text;
-            span.style.left = (Math.random() * 80 + 10) + '%';
+            
+            // Random: Either Left (0-25%) OR Right (75-100%)
+            const isLeft = Math.random() < 0.5;
+            if (isLeft) {
+                span.style.left = (Math.random() * 25) + '%';
+            } else {
+                span.style.left = (Math.random() * 25 + 75) + '%';
+            }
+
             span.style.animationDuration = (Math.random() * 10 + 20) + 's'; 
             bgTextContainer.appendChild(span);
             setTimeout(() => { span.remove(); }, 35000);
@@ -661,11 +683,16 @@
                 if (!hasCardDropped) {
                     scratchCardContainer.classList.add('dropped');
                     hasCardDropped = true;
-                    // Resize canvas once dropped to ensure fit
+                    // Resize canvas AFTER drop to ensure correct size
                     setTimeout(() => {
                         canvas.width = scratchCardContainer.offsetWidth;
                         canvas.height = scratchCardContainer.offsetHeight;
-                        ctx.drawImage(xboxImg, 0, 0, canvas.width, canvas.height);
+                        // Draw image (or fallback color if image failed)
+                        if (xboxImg.complete && xboxImg.naturalHeight !== 0) {
+                            ctx.drawImage(xboxImg, 0, 0, canvas.width, canvas.height);
+                        } else {
+                            ctx.fillStyle = "#107c10"; ctx.fillRect(0,0,canvas.width, canvas.height);
+                        }
                     }, 2100);
                 }
 
@@ -782,7 +809,7 @@
 
         // --- MANUAL DRAWING ---
         rooftop.addEventListener('mousedown', (e) => {
-            // Prevent drawing on the scratch card or buttons
+            // Prevent drawing on scratch card or buttons
             if(e.target.closest('.control-btn') || e.target.tagName === 'BUTTON' || e.target.id === 'scratch-canvas') return;
             createStarAt(e.clientX, e.clientY, !!lastPoint);
         });
