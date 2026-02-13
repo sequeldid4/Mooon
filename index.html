@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFT_SERVICE_FINAL_V36</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LIFT_TO_THE_MOON</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-wall: #0f0f0f;
@@ -198,7 +199,7 @@
         #xbox-notification {
             position: fixed; 
             top: 20px; 
-            right: -400px; /* Start off-screen */
+            right: -400px;
             width: 320px;
             height: 64px;
             background: #1f1f1f;
@@ -230,26 +231,34 @@
         /* --- GIFT MODAL (CENTER SCREEN) --- */
         #gift-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.9);
             z-index: 10000;
-            display: flex; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.5s;
-            backdrop-filter: blur(5px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.8s;
+            backdrop-filter: blur(8px);
+            overflow-y: auto; /* Allow scrolling for long notes */
         }
         #gift-modal.active { opacity: 1; pointer-events: auto; }
 
-        /* SCRATCH CARD (Inside Modal) */
+        /* Modal Content Wrapper */
+        .modal-content-wrapper {
+            display: flex; flex-direction: column; align-items: center;
+            width: 90%; max-width: 500px;
+            padding: 20px 0;
+        }
+
+        /* SCRATCH CARD */
         #scratch-card-container {
             position: relative;
-            width: 80vw; max-width: 500px;
-            height: 300px; 
+            width: 100%;
+            height: 280px; 
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 0 50px rgba(16, 124, 16, 0.3);
             background: #000;
-            transform: scale(0.8); transition: transform 0.5s;
+            margin-bottom: 20px;
+            flex-shrink: 0;
         }
-        #gift-modal.active #scratch-card-container { transform: scale(1); }
 
         /* The Secret Code Underneath */
         .secret-code {
@@ -257,17 +266,42 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             background: linear-gradient(135deg, #111, #1a1a1a);
             border: 2px solid #333;
+            /* CRITICAL FIX: Disable selection so clicks pass to canvas */
+            user-select: none; -webkit-user-select: none;
         }
         .code-label { color: var(--xbox-green); font-family: monospace; margin-bottom: 10px; font-size: 1.2rem; }
         .code-text { 
             color: #fff; font-family: 'Courier New', monospace; 
             font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; border: 1px dashed #555; padding: 10px;
-            user-select: text; 
         }
 
         #scratch-canvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 2; cursor: pointer; touch-action: none;
+        }
+
+        /* --- THE NOTE --- */
+        .note-container {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 2px solid var(--xbox-green);
+            opacity: 0; transform: translateY(20px);
+            transition: all 1s ease-in-out;
+            transition-delay: 0.5s; /* Wait for modal to open */
+        }
+        #gift-modal.active .note-container { opacity: 1; transform: translateY(0); }
+
+        .note-text {
+            font-family: 'Caveat', 'Brush Script MT', cursive;
+            color: #e0e0e0;
+            font-size: 1.4rem;
+            line-height: 1.4;
+            text-shadow: 0 0 2px #000;
+        }
+        .note-sig {
+            text-align: right; margin-top: 15px; font-weight: bold; color: var(--xbox-green);
         }
 
         /* --- FALLING TEXT --- */
@@ -426,11 +460,21 @@
         </div>
 
         <div id="gift-modal">
-            <div id="scratch-card-container">
-                <div class="secret-code">
-                    <div class="code-label">XBOX GAME PASS</div>
-                    <div class="code-text">XXXX-XXXX-XXXX-XXXX</div> </div>
-                <canvas id="scratch-canvas"></canvas>
+            <div class="modal-content-wrapper">
+                <div id="scratch-card-container">
+                    <div class="secret-code">
+                        <div class="code-label">XBOX GAME PASS</div>
+                        <div class="code-text">XXXX-XXXX-XXXX-XXXX</div>
+                    </div>
+                    <canvas id="scratch-canvas"></canvas>
+                </div>
+
+                <div class="note-container">
+                    <div class="note-text">
+                        When i u said u are not able to play games because of ur pretty laptop , i wanted to give a surprise by making u play any game on that pretty laptop of urs , i really hope i meet u tomorrow n evryday so plz accept my small gift ☺
+                    </div>
+                    <div class="note-sig">bye -Faizan</div>
+                </div>
             </div>
         </div>
 
@@ -549,27 +593,24 @@
                 ctx.drawImage(xboxImg, 0, 0, canvas.width, canvas.height);
             } else {
                 ctx.fillStyle = "#107c10"; ctx.fillRect(0,0,canvas.width, canvas.height);
+                ctx.font = "20px monospace"; ctx.fillStyle = "white"; ctx.fillText("SCRATCH ME", 50, 100);
             }
         }
         
-        // --- GIFT OPENING LOGIC ---
         function openGift() {
-            // Hide notification
             xboxNotification.classList.remove('show');
-            // Show modal
             giftModal.classList.add('active');
-            // Init canvas once visible so size is correct
             setTimeout(initCanvas, 100);
         }
 
-        // Close modal on background click
+        // Close on background click
         giftModal.addEventListener('click', (e) => {
             if(e.target === giftModal) {
                 giftModal.classList.remove('active');
             }
         });
 
-        // --- SCRATCH LOGIC ---
+        // --- SCRATCH LOGIC (FIXED) ---
         let isScratching = false;
 
         function getMousePos(e) {
@@ -585,13 +626,15 @@
             const pos = getMousePos(e);
             ctx.globalCompositeOperation = 'destination-out';
             ctx.beginPath();
-            ctx.arc(pos.x, pos.y, 30, 0, Math.PI * 2); 
+            ctx.arc(pos.x, pos.y, 25, 0, Math.PI * 2); 
             ctx.fill();
         }
 
         canvas.addEventListener('mousedown', () => isScratching = true);
         canvas.addEventListener('mouseup', () => isScratching = false);
         canvas.addEventListener('mousemove', scratch);
+        
+        // Touch events with preventDefault to stop scrolling/selecting
         canvas.addEventListener('touchstart', (e) => { isScratching = true; e.preventDefault(); }, { passive: false });
         canvas.addEventListener('touchend', () => isScratching = false);
         canvas.addEventListener('touchmove', scratch, { passive: false });
@@ -706,7 +749,6 @@
             }, phrases.length * 800 + 1000);
         }
 
-        // --- BACKGROUND WHISPER SPAWNER (FIXED ZONES) ---
         function spawnBackgroundWhisper() {
             if (!isLevel2) return;
             const text = bgWhispers[Math.floor(Math.random() * bgWhispers.length)];
@@ -732,12 +774,9 @@
                 toggleBtn.innerText = "↑";
                 wipeConstellations(); 
                 
-                // TRIGGER NOTIFICATION
                 if (!hasNotifShown) {
                     xboxSfx.play().catch(()=>{});
-                    setTimeout(() => {
-                        xboxNotification.classList.add('show');
-                    }, 500); // Small delay for effect
+                    setTimeout(() => { xboxNotification.classList.add('show'); }, 500);
                     hasNotifShown = true;
                 }
 
