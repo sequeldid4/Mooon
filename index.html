@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFT_SERVICE_FINAL_V34</title>
+    <title>LIFT_SERVICE_FINAL_V35</title>
     <style>
         :root {
             --bg-wall: #0f0f0f;
@@ -12,6 +12,7 @@
             --light-off: #111;
             --valentine-lit: #ff0040;
             --success-green: #00ff41;
+            --xbox-green: #107c10;
         }
 
         body {
@@ -196,7 +197,7 @@
         /* --- SCRATCH CARD CONTAINER --- */
         #scratch-card-container {
             position: absolute; 
-            top: -150%; /* Start above */
+            top: -150%; 
             left: 50%; 
             transform: translateX(-50%);
             z-index: 50; 
@@ -207,23 +208,64 @@
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            background: #111;
+            background: #000; /* Pure black background for scratch area */
         }
         #scratch-card-container.dropped { top: 25%; }
 
-        /* The Secret Code Underneath */
+        /* --- XBOX NOTIFICATION STYLE (Hidden Code) --- */
         .secret-code {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: linear-gradient(45deg, #0f2027, #203a43, #2c5364);
-            color: #00ff41; font-family: 'Courier New', monospace;
-            text-align: center;
+            display: flex; align-items: center; justify-content: center;
+            background: #000;
         }
-        .code-title { font-size: 1.2rem; color: #fff; margin-bottom: 10px; }
-        .code-text { 
-            font-size: 1.5rem; font-weight: bold; letter-spacing: 2px;
-            background: rgba(0,0,0,0.5); padding: 10px; border: 1px dashed #00ff41;
-            user-select: text; 
+
+        /* The Notification Pill */
+        .xbox-popup {
+            background: #333;
+            width: 90%;
+            max-width: 400px;
+            height: 80px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid #444;
+        }
+
+        /* Trophy Icon */
+        .xbox-icon {
+            width: 50px; height: 50px;
+            background: var(--xbox-green); /* Xbox Green */
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: white;
+            margin-right: 15px;
+            box-shadow: 0 0 15px var(--xbox-green);
+        }
+
+        .xbox-content {
+            display: flex; flex-direction: column;
+            justify-content: center;
+        }
+
+        .xbox-title {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 14px;
+            color: #fff;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .xbox-code {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            color: #ccc;
+            font-weight: bold;
+            margin-top: 2px;
+            letter-spacing: 2px;
         }
 
         /* The Scratchable Surface */
@@ -231,7 +273,7 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 2; /* Ensure it's on top */
             cursor: pointer;
-            touch-action: none; /* CRITICAL: Prevents scrolling/gestures on the canvas */
+            touch-action: none;
         }
 
         /* --- FALLING TEXT (MAIN) --- */
@@ -355,6 +397,8 @@
     <audio id="level2-music" src="song1.mp3"></audio>
     <audio id="btn-sfx" src="vfx.mp3"></audio>
     <audio id="wind-sfx" src="wind.mp3" loop></audio>
+    
+    <audio id="xbox-sfx" src="vfx1.mp3"></audio>
 
     <div class="door door-left" id="doorL"></div>
     <div class="door door-right" id="doorR"></div>
@@ -380,8 +424,12 @@
 
         <div id="scratch-card-container">
             <div class="secret-code">
-                <div class="code-title">GIFT UNLOCKED</div>
-                <div class="code-text">XXXX-XXXX-XXXX-XXXX</div> </div>
+                <div class="xbox-popup">
+                    <div class="xbox-icon">🏆</div> <div class="xbox-content">
+                        <div class="xbox-title">GIFT UNLOCKED</div>
+                        <div class="xbox-code">XXXX-XXXX-XXXX-XXXX</div> </div>
+                </div>
+            </div>
             <canvas id="scratch-canvas"></canvas>
         </div>
 
@@ -453,6 +501,7 @@
         const musicLvl1 = document.getElementById('bg-music');
         const musicLvl2 = document.getElementById('level2-music');
         const sfx = document.getElementById('btn-sfx');
+        const xboxSfx = document.getElementById('xbox-sfx');
         const wind = document.getElementById('wind-sfx');
 
         // PLAYLIST
@@ -485,9 +534,9 @@
             "Dont be sad:(", "no way u r Oumaima!", "Wht am i doin rn ", "Im a MAN"
         ];
 
-        // --- SCRATCH CARD INIT (FIXED) ---
+        // --- SCRATCH CARD INIT ---
         const xboxImg = new Image();
-        xboxImg.src = 'giftcard.png'; // Updated Name
+        xboxImg.src = 'giftcard.png'; 
         
         xboxImg.onload = () => {
             canvas.width = scratchCardContainer.offsetWidth;
@@ -505,7 +554,7 @@
             ctx.fillText("SCRATCH ME", 50, 100);
         };
 
-        // --- SCRATCH LOGIC (FIXED FOR MOBILE CENTER) ---
+        // --- SCRATCH LOGIC ---
         let isScratching = false;
 
         function getMousePos(e) {
@@ -532,7 +581,6 @@
         canvas.addEventListener('mouseup', () => isScratching = false);
         canvas.addEventListener('mousemove', scratch);
         
-        // CRITICAL FIX: preventDefault on touchstart prevents text selection/magnifier
         canvas.addEventListener('touchstart', (e) => {
             isScratching = true;
             e.preventDefault(); 
@@ -687,6 +735,10 @@
                 if (!hasCardDropped) {
                     scratchCardContainer.classList.add('dropped');
                     hasCardDropped = true;
+                    
+                    // PLAY XBOX SOUND
+                    xboxSfx.play().catch(()=>{});
+
                     // Resize canvas AFTER drop to ensure correct size
                     setTimeout(() => {
                         canvas.width = scratchCardContainer.offsetWidth;
