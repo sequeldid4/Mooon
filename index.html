@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LIFT_TO_THE_MOON</title>
+    <title>LIFT_SERVICE_FINAL_V38</title>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -236,7 +236,7 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             opacity: 0; pointer-events: none; transition: opacity 0.8s;
             backdrop-filter: blur(8px);
-            overflow-y: auto; /* Allow scrolling for long notes */
+            overflow-y: auto;
         }
         #gift-modal.active { opacity: 1; pointer-events: auto; }
 
@@ -245,6 +245,7 @@
             display: flex; flex-direction: column; align-items: center;
             width: 90%; max-width: 500px;
             padding: 20px 0;
+            position: relative;
         }
 
         /* SCRATCH CARD */
@@ -266,7 +267,6 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             background: linear-gradient(135deg, #111, #1a1a1a);
             border: 2px solid #333;
-            /* CRITICAL FIX: Disable selection so clicks pass to canvas */
             user-select: none; -webkit-user-select: none;
         }
         .code-label { color: var(--xbox-green); font-family: monospace; margin-bottom: 10px; font-size: 1.2rem; }
@@ -280,18 +280,36 @@
             z-index: 2; cursor: pointer; touch-action: none;
         }
 
-        /* --- THE NOTE --- */
+        /* --- LETTER ICON --- */
+        #letter-icon {
+            font-size: 3rem;
+            cursor: pointer;
+            animation: bounce 2s infinite;
+            text-align: center;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+            margin-top: 10px;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+
+        /* --- THE NOTE & CAT --- */
         .note-container {
+            position: relative;
             width: 100%;
             background: rgba(255, 255, 255, 0.05);
-            padding: 20px;
+            padding: 25px;
             border-radius: 10px;
             border-left: 2px solid var(--xbox-green);
-            opacity: 0; transform: translateY(20px);
-            transition: all 1s ease-in-out;
-            transition-delay: 0.5s; /* Wait for modal to open */
+            margin-top: 15px;
+            display: none; /* Hidden initially */
+            opacity: 0;
+            transition: opacity 1s ease-in;
         }
-        #gift-modal.active .note-container { opacity: 1; transform: translateY(0); }
+        .note-container.show { display: block; opacity: 1; }
 
         .note-text {
             font-family: 'Caveat', 'Brush Script MT', cursive;
@@ -299,10 +317,29 @@
             font-size: 1.4rem;
             line-height: 1.4;
             text-shadow: 0 0 2px #000;
+            position: relative;
+            z-index: 5;
         }
         .note-sig {
             text-align: right; margin-top: 15px; font-weight: bold; color: var(--xbox-green);
+            font-family: 'Caveat', cursive; font-size: 1.5rem;
         }
+
+        /* THE CAT IMAGE */
+        .cat-decoration {
+            position: absolute;
+            bottom: -20px;
+            left: -20px;
+            width: 100px; /* Adjust based on image size */
+            height: auto;
+            z-index: 10;
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.8));
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1.5s ease-in;
+        }
+        .note-container.show .cat-decoration { opacity: 1; }
+
 
         /* --- FALLING TEXT --- */
         .falling-text-container {
@@ -469,9 +506,15 @@
                     <canvas id="scratch-canvas"></canvas>
                 </div>
 
-                <div class="note-container">
+                <div id="letter-icon" onclick="showNote()">
+                    📩
+                    <div style="font-size:14px; font-family:'Courier New'; margin-top:5px;">Read Note</div>
+                </div>
+
+                <div class="note-container" id="note">
+                    <img src="cat.png" class="cat-decoration" alt="Cat">
                     <div class="note-text">
-                        When i u said u are not able to play games because of ur pretty laptop , i wanted to give a surprise by making u play any game on that pretty laptop of urs , i really hope i meet u tomorrow n evryday so plz accept my small gift ☺
+                        I hope u like it , when i u said u are not able to play games because of ur pretty laptop , i wanted to give a surprise by making u play any game on that pretty laptop of urs n Im writting this after wishhin u Good night , i really hope i meet u tomorrow n evryday like this , but i also get sad sometimes when i get close to soemone , it had happened to me whenever i let someone be in my heart n all the time it just dont end well.... , thats why didnt talk much and im not being emotional or something , but i got a fragile heart ∙plz from here if u want to be here u can message me or else u can just go away accepting by small gift , adn we never meet again....
                     </div>
                     <div class="note-sig">bye -Faizan</div>
                 </div>
@@ -545,6 +588,8 @@
         const bgTextContainer = document.getElementById('bgTextContainer');
         const canvas = document.getElementById('scratch-canvas');
         const ctx = canvas.getContext('2d');
+        const letterIcon = document.getElementById('letter-icon');
+        const note = document.getElementById('note');
         
         const musicLvl1 = document.getElementById('bg-music');
         const musicLvl2 = document.getElementById('level2-music');
@@ -603,6 +648,12 @@
             setTimeout(initCanvas, 100);
         }
 
+        function showNote() {
+            playSfx();
+            letterIcon.style.display = 'none';
+            note.classList.add('show');
+        }
+
         // Close on background click
         giftModal.addEventListener('click', (e) => {
             if(e.target === giftModal) {
@@ -610,7 +661,7 @@
             }
         });
 
-        // --- SCRATCH LOGIC (FIXED) ---
+        // --- SCRATCH LOGIC ---
         let isScratching = false;
 
         function getMousePos(e) {
@@ -634,7 +685,6 @@
         canvas.addEventListener('mouseup', () => isScratching = false);
         canvas.addEventListener('mousemove', scratch);
         
-        // Touch events with preventDefault to stop scrolling/selecting
         canvas.addEventListener('touchstart', (e) => { isScratching = true; e.preventDefault(); }, { passive: false });
         canvas.addEventListener('touchend', () => isScratching = false);
         canvas.addEventListener('touchmove', scratch, { passive: false });
