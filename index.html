@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LIFT_SERVICE_FINAL_V38</title>
+    <title>LIFT_SERVICE_FINAL_V39</title>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -240,7 +240,6 @@
         }
         #gift-modal.active { opacity: 1; pointer-events: auto; }
 
-        /* Modal Content Wrapper */
         .modal-content-wrapper {
             display: flex; flex-direction: column; align-items: center;
             width: 90%; max-width: 500px;
@@ -270,10 +269,20 @@
             user-select: none; -webkit-user-select: none;
         }
         .code-label { color: var(--xbox-green); font-family: monospace; margin-bottom: 10px; font-size: 1.2rem; }
+        
+        .code-row {
+            display: flex; align-items: center; gap: 10px;
+        }
         .code-text { 
             color: #fff; font-family: 'Courier New', monospace; 
-            font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; border: 1px dashed #555; padding: 10px;
+            font-size: 1.2rem; font-weight: bold; letter-spacing: 2px; border: 1px dashed #555; padding: 10px;
         }
+        .copy-btn {
+            background: #222; border: 1px solid #444; color: #fff;
+            padding: 8px; cursor: pointer; border-radius: 5px; font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .copy-btn:active { background: var(--xbox-green); border-color: var(--xbox-green); }
 
         #scratch-canvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -282,64 +291,61 @@
 
         /* --- LETTER ICON --- */
         #letter-icon {
-            font-size: 3rem;
-            cursor: pointer;
-            animation: bounce 2s infinite;
-            text-align: center;
-            color: #fff;
-            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+            font-size: 3rem; cursor: pointer; animation: bounce 2s infinite;
+            text-align: center; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.5);
             margin-top: 10px;
         }
         @keyframes bounce {
             0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-20px);}
-            60% {transform: translateY(-10px);}
+            40% {transform: translateY(-20px);} 60% {transform: translateY(-10px);}
         }
 
         /* --- THE NOTE & CAT --- */
         .note-container {
-            position: relative;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 25px;
-            border-radius: 10px;
-            border-left: 2px solid var(--xbox-green);
-            margin-top: 15px;
-            display: none; /* Hidden initially */
-            opacity: 0;
-            transition: opacity 1s ease-in;
+            position: relative; width: 100%; background: rgba(255, 255, 255, 0.05);
+            padding: 25px; border-radius: 10px; border-left: 2px solid var(--xbox-green);
+            margin-top: 15px; display: none; opacity: 0; transition: opacity 1s ease-in;
         }
         .note-container.show { display: block; opacity: 1; }
 
         .note-text {
-            font-family: 'Caveat', 'Brush Script MT', cursive;
-            color: #e0e0e0;
-            font-size: 1.4rem;
-            line-height: 1.4;
-            text-shadow: 0 0 2px #000;
-            position: relative;
-            z-index: 5;
+            font-family: 'Caveat', 'Brush Script MT', cursive; color: #e0e0e0;
+            font-size: 1.4rem; line-height: 1.4; text-shadow: 0 0 2px #000;
+            position: relative; z-index: 5;
         }
         .note-sig {
             text-align: right; margin-top: 15px; font-weight: bold; color: var(--xbox-green);
             font-family: 'Caveat', cursive; font-size: 1.5rem;
         }
 
-        /* THE CAT IMAGE */
         .cat-decoration {
-            position: absolute;
-            bottom: -20px;
-            left: -20px;
-            width: 100px; /* Adjust based on image size */
-            height: auto;
-            z-index: 10;
+            position: absolute; bottom: -20px; left: -20px;
+            width: 100px; height: auto; z-index: 10;
             filter: drop-shadow(0 0 10px rgba(0,0,0,0.8));
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 1.5s ease-in;
+            pointer-events: none; opacity: 0; transition: opacity 1.5s ease-in;
         }
         .note-container.show .cat-decoration { opacity: 1; }
 
+        /* --- BACK BUTTON --- */
+        .back-btn {
+            margin-top: 30px;
+            padding: 10px 25px;
+            background: transparent;
+            border: 1px solid var(--xbox-green);
+            color: var(--xbox-green);
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(16, 124, 16, 0.2);
+        }
+        .back-btn:hover {
+            background: var(--xbox-green);
+            color: #000;
+            box-shadow: 0 0 20px var(--xbox-green);
+        }
 
         /* --- FALLING TEXT --- */
         .falling-text-container {
@@ -501,7 +507,10 @@
                 <div id="scratch-card-container">
                     <div class="secret-code">
                         <div class="code-label">XBOX GAME PASS</div>
-                        <div class="code-text">XXXX-XXXX-XXXX-XXXX</div>
+                        <div class="code-row">
+                            <div class="code-text" id="xbox-code-text">XXXX-XXXX-XXXX-XXXX</div>
+                            <button class="copy-btn" onclick="copyCode()">📋</button>
+                        </div>
                     </div>
                     <canvas id="scratch-canvas"></canvas>
                 </div>
@@ -518,6 +527,8 @@
                     </div>
                     <div class="note-sig">bye -Faizan</div>
                 </div>
+
+                <button class="back-btn" onclick="closeGift()">Back to Roof</button>
             </div>
         </div>
 
@@ -654,12 +665,18 @@
             note.classList.add('show');
         }
 
-        // Close on background click
-        giftModal.addEventListener('click', (e) => {
-            if(e.target === giftModal) {
-                giftModal.classList.remove('active');
-            }
-        });
+        function closeGift() {
+            giftModal.classList.remove('active');
+        }
+
+        function copyCode() {
+            const codeText = document.getElementById('xbox-code-text').innerText;
+            navigator.clipboard.writeText(codeText).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.innerText = "✓";
+                setTimeout(() => { btn.innerText = "📋"; }, 2000);
+            });
+        }
 
         // --- SCRATCH LOGIC ---
         let isScratching = false;
@@ -750,13 +767,16 @@
                             
                             currentTrackIndex = 0;
                             musicLvl2.src = playlist[currentTrackIndex];
-                            musicLvl2.volume = 0.2;
+                            
+                            // UPDATED MUSIC FADE LOGIC
+                            musicLvl2.volume = 0.1; // Start at 10%
                             musicLvl2.play().catch(() => {});
                             rooftop.classList.add('visualizer-active');
 
                             const fadeIn = setInterval(() => {
                                 if (musicLvl2.volume < 1.0) {
-                                    musicLvl2.volume = Math.min(1.0, musicLvl2.volume + 0.2);
+                                    // Increase 15% (0.15) every second (1000ms)
+                                    musicLvl2.volume = Math.min(1.0, musicLvl2.volume + 0.15);
                                 } else {
                                     clearInterval(fadeIn);
                                 }
