@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LIFT_SERVICE_FINAL_V39</title>
+    <title>LIFT_SERVICE_FINAL_V40</title>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -195,6 +195,27 @@
             transform: translateY(100vh); 
         }
 
+        /* --- GUIDE TEXT (POINTER) --- */
+        #guide-text {
+            position: absolute; 
+            bottom: 80px; 
+            left: 50%; 
+            transform: translateX(-50%);
+            color: #fff; 
+            font-family: 'Courier New', monospace; 
+            font-size: 1.2rem;
+            font-weight: bold;
+            animation: pulse-guide 1s infinite;
+            display: none; /* Hidden by default */
+            pointer-events: none; 
+            text-shadow: 0 0 10px #00ff41;
+            z-index: 30;
+        }
+        @keyframes pulse-guide { 
+            0%, 100% { opacity: 0.5; transform: translateX(-50%) translateY(0); } 
+            50% { opacity: 1; transform: translateX(-50%) translateY(-5px); } 
+        }
+
         /* --- XBOX NOTIFICATION (TOP RIGHT) --- */
         #xbox-notification {
             position: fixed; 
@@ -322,30 +343,21 @@
             position: absolute; bottom: -20px; left: -20px;
             width: 100px; height: auto; z-index: 10;
             filter: drop-shadow(0 0 10px rgba(0,0,0,0.8));
-            pointer-events: none; opacity: 0; transition: opacity 1.5s ease-in;
+            pointer-events: auto; /* Clickable */
+            cursor: pointer;
+            opacity: 0; transition: opacity 1.5s ease-in;
         }
         .note-container.show .cat-decoration { opacity: 1; }
 
         /* --- BACK BUTTON --- */
         .back-btn {
-            margin-top: 30px;
-            padding: 10px 25px;
-            background: transparent;
-            border: 1px solid var(--xbox-green);
-            color: var(--xbox-green);
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s;
-            box-shadow: 0 0 10px rgba(16, 124, 16, 0.2);
+            margin-top: 30px; padding: 10px 25px; background: transparent;
+            border: 1px solid var(--xbox-green); color: var(--xbox-green);
+            font-family: 'Courier New', monospace; font-weight: bold;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+            transition: all 0.3s; box-shadow: 0 0 10px rgba(16, 124, 16, 0.2);
         }
-        .back-btn:hover {
-            background: var(--xbox-green);
-            color: #000;
-            box-shadow: 0 0 20px var(--xbox-green);
-        }
+        .back-btn:hover { background: var(--xbox-green); color: #000; box-shadow: 0 0 20px var(--xbox-green); }
 
         /* --- FALLING TEXT --- */
         .falling-text-container {
@@ -367,7 +379,7 @@
             100% { opacity: 1; transform: translateY(0) rotate(0deg); }
         }
 
-        /* --- BACKGROUND FALLING WHISPERS (LEFT & RIGHT ONLY) --- */
+        /* --- BACKGROUND FALLING WHISPERS --- */
         .bg-text-container {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 1; overflow: hidden;
@@ -469,6 +481,7 @@
     <audio id="btn-sfx" src="vfx.mp3"></audio>
     <audio id="wind-sfx" src="wind.mp3" loop></audio>
     <audio id="xbox-sfx" src="vfx1.mp3"></audio>
+    <audio id="meow-sfx" src="meow.mp3"></audio>
 
     <div class="door door-left" id="doorL"></div>
     <div class="door door-right" id="doorR"></div>
@@ -521,7 +534,7 @@
                 </div>
 
                 <div class="note-container" id="note">
-                    <img src="cat.png" class="cat-decoration" alt="Cat">
+                    <img src="cat.png" class="cat-decoration" alt="Cat" onclick="playMeow()">
                     <div class="note-text">
                         I hope u like it , when i u said u are not able to play games because of ur pretty laptop , i wanted to give a surprise by making u play any game on that pretty laptop of urs n Im writting this after wishhin u Good night , i really hope i meet u tomorrow n evryday like this , but i also get sad sometimes when i get close to soemone , it had happened to me whenever i let someone be in my heart n all the time it just dont end well.... , thats why didnt talk much and im not being emotional or something , but i got a fragile heart ∙plz from here if u want to be here u can message me or else u can just go away accepting by small gift , adn we never meet again....
                     </div>
@@ -538,6 +551,8 @@
                 <button class="aesthetic-choice" id="btnYes">yes</button>
                 <button class="aesthetic-choice" id="btnNo">no</button>
             </div>
+            
+            <div id="guide-text">↓ CLICK TO OPEN ↓</div>
         </div>
         
         <div class="controls-wrapper" id="controls">
@@ -601,12 +616,14 @@
         const ctx = canvas.getContext('2d');
         const letterIcon = document.getElementById('letter-icon');
         const note = document.getElementById('note');
+        const guideText = document.getElementById('guide-text');
         
         const musicLvl1 = document.getElementById('bg-music');
         const musicLvl2 = document.getElementById('level2-music');
         const sfx = document.getElementById('btn-sfx');
         const xboxSfx = document.getElementById('xbox-sfx');
         const wind = document.getElementById('wind-sfx');
+        const meowSfx = document.getElementById('meow-sfx');
 
         // PLAYLIST
         const playlist = ['song1.mp3', 'song2.mp3', 'song3.mp3'];
@@ -677,6 +694,18 @@
                 setTimeout(() => { btn.innerText = "📋"; }, 2000);
             });
         }
+
+        function playMeow() {
+            meowSfx.currentTime = 0;
+            meowSfx.play().catch(()=>{});
+        }
+
+        // Close on background click
+        giftModal.addEventListener('click', (e) => {
+            if(e.target === giftModal) {
+                giftModal.classList.remove('active');
+            }
+        });
 
         // --- SCRATCH LOGIC ---
         let isScratching = false;
@@ -768,14 +797,12 @@
                             currentTrackIndex = 0;
                             musicLvl2.src = playlist[currentTrackIndex];
                             
-                            // UPDATED MUSIC FADE LOGIC
-                            musicLvl2.volume = 0.1; // Start at 10%
+                            musicLvl2.volume = 0.1; 
                             musicLvl2.play().catch(() => {});
                             rooftop.classList.add('visualizer-active');
 
                             const fadeIn = setInterval(() => {
                                 if (musicLvl2.volume < 1.0) {
-                                    // Increase 15% (0.15) every second (1000ms)
                                     musicLvl2.volume = Math.min(1.0, musicLvl2.volume + 0.15);
                                 } else {
                                     clearInterval(fadeIn);
@@ -839,11 +866,14 @@
             if (uiLayer.classList.contains('hidden')) {
                 uiLayer.classList.remove('hidden');
                 toggleBtn.innerText = "↓";
+                guideText.style.display = 'none'; // Hide guide
             } else {
                 uiLayer.classList.add('hidden');
                 toggleBtn.innerText = "↑";
                 wipeConstellations(); 
                 
+                guideText.style.display = 'none'; // Ensure hidden
+
                 if (!hasNotifShown) {
                     xboxSfx.play().catch(()=>{});
                     setTimeout(() => { xboxNotification.classList.add('show'); }, 500);
@@ -855,6 +885,31 @@
                     whisperInterval = setInterval(spawnBackgroundWhisper, 2000);
                 }
             }
+        }
+
+        // --- SUCCESS SEQUENCE ---
+        btnYes.addEventListener('click', () => { 
+            playSfx(); 
+            triggerSuccess(); 
+            // SHOW GUIDE TEXT AFTER CLICKING YES
+            setTimeout(() => {
+                guideText.style.display = 'block';
+            }, 2000); // Small delay after text falls
+        });
+
+        function triggerSuccess() {
+            for (let i = 0; i < 50; i++) { createExplosionHeart(); }
+            textContainer.innerHTML = "<div class='word fall' style='color: #fff0f5; text-shadow: 0 0 10px #ff99ac, 0 0 20px #ff0040; font-size: 3rem;'>I KNEW IT <3</div>";
+            choiceBox.style.display = "none";
+        }
+
+        function createExplosionHeart() {
+            const heart = document.createElement('div'); heart.innerText = "❤"; heart.classList.add('explosion-heart');
+            const angle = Math.random() * Math.PI * 2; const velocity = 100 + Math.random() * 200;
+            const tx = Math.cos(angle) * velocity + 'px'; const ty = Math.sin(angle) * velocity + 'px';
+            heart.style.setProperty('--tx', tx); heart.style.setProperty('--ty', ty);
+            heart.style.left = '50%'; heart.style.top = '50%';
+            document.body.appendChild(heart); setTimeout(() => heart.remove(), 1000);
         }
 
         // --- CONSTELLATION LOGIC ---
@@ -941,24 +996,6 @@
             }
             starHistory.push({ star: star, line: line, x: x, y: y });
             lastPoint = { x: x, y: y };
-        }
-
-        // --- SUCCESS SEQUENCE ---
-        btnYes.addEventListener('click', () => { playSfx(); triggerSuccess(); });
-
-        function triggerSuccess() {
-            for (let i = 0; i < 50; i++) { createExplosionHeart(); }
-            textContainer.innerHTML = "<div class='word fall' style='color: #fff0f5; text-shadow: 0 0 10px #ff99ac, 0 0 20px #ff0040; font-size: 3rem;'>I KNEW IT <3</div>";
-            choiceBox.style.display = "none";
-        }
-
-        function createExplosionHeart() {
-            const heart = document.createElement('div'); heart.innerText = "❤"; heart.classList.add('explosion-heart');
-            const angle = Math.random() * Math.PI * 2; const velocity = 100 + Math.random() * 200;
-            const tx = Math.cos(angle) * velocity + 'px'; const ty = Math.sin(angle) * velocity + 'px';
-            heart.style.setProperty('--tx', tx); heart.style.setProperty('--ty', ty);
-            heart.style.left = '50%'; heart.style.top = '50%';
-            document.body.appendChild(heart); setTimeout(() => heart.remove(), 1000);
         }
 
         // --- MANUAL DRAWING ---
