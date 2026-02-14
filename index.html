@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LIFT_SERVICE_FINAL_V40</title>
+    <title>LIFT_SERVICE_FINAL_V41</title>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -197,19 +197,10 @@
 
         /* --- GUIDE TEXT (POINTER) --- */
         #guide-text {
-            position: absolute; 
-            bottom: 80px; 
-            left: 50%; 
-            transform: translateX(-50%);
-            color: #fff; 
-            font-family: 'Courier New', monospace; 
-            font-size: 1.2rem;
-            font-weight: bold;
-            animation: pulse-guide 1s infinite;
-            display: none; /* Hidden by default */
-            pointer-events: none; 
-            text-shadow: 0 0 10px #00ff41;
-            z-index: 30;
+            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+            color: #fff; font-family: 'Courier New', monospace; font-size: 1.2rem;
+            font-weight: bold; animation: pulse-guide 1s infinite;
+            display: none; pointer-events: none; text-shadow: 0 0 10px #00ff41; z-index: 30;
         }
         @keyframes pulse-guide { 
             0%, 100% { opacity: 0.5; transform: translateX(-50%) translateY(0); } 
@@ -218,33 +209,21 @@
 
         /* --- XBOX NOTIFICATION (TOP RIGHT) --- */
         #xbox-notification {
-            position: fixed; 
-            top: 20px; 
-            right: -400px;
-            width: 320px;
-            height: 64px;
-            background: #1f1f1f;
-            display: flex;
-            align-items: center;
-            border-radius: 32px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            z-index: 9999;
-            cursor: pointer;
-            transition: right 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: fixed; top: 20px; right: -400px;
+            width: 320px; height: 64px; background: #1f1f1f;
+            display: flex; align-items: center; border-radius: 32px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 9999;
+            cursor: pointer; transition: right 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             border: 1px solid #333;
         }
         #xbox-notification.show { right: 20px; }
         
         .notif-icon-circle {
-            width: 40px; height: 40px;
-            background: var(--xbox-green);
-            border-radius: 50%;
+            width: 40px; height: 40px; background: var(--xbox-green); border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            margin-left: 12px; margin-right: 15px;
-            box-shadow: 0 0 10px rgba(16, 124, 16, 0.5);
+            margin-left: 12px; margin-right: 15px; box-shadow: 0 0 10px rgba(16, 124, 16, 0.5);
         }
         .notif-trophy { font-size: 20px; }
-        
         .notif-content { display: flex; flex-direction: column; justify-content: center; }
         .notif-title { font-family: 'Segoe UI', sans-serif; font-weight: bold; color: white; font-size: 14px; letter-spacing: 0.5px; }
         .notif-sub { font-family: 'Segoe UI', sans-serif; color: #bbb; font-size: 12px; }
@@ -252,48 +231,34 @@
         /* --- GIFT MODAL (CENTER SCREEN) --- */
         #gift-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 10000;
+            background: rgba(0,0,0,0.9); z-index: 10000;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             opacity: 0; pointer-events: none; transition: opacity 0.8s;
-            backdrop-filter: blur(8px);
-            overflow-y: auto;
+            backdrop-filter: blur(8px); overflow-y: auto;
         }
         #gift-modal.active { opacity: 1; pointer-events: auto; }
 
         .modal-content-wrapper {
             display: flex; flex-direction: column; align-items: center;
-            width: 90%; max-width: 500px;
-            padding: 20px 0;
-            position: relative;
+            width: 90%; max-width: 500px; padding: 20px 0; position: relative;
         }
 
         /* SCRATCH CARD */
         #scratch-card-container {
-            position: relative;
-            width: 100%;
-            height: 280px; 
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 0 50px rgba(16, 124, 16, 0.3);
-            background: #000;
-            margin-bottom: 20px;
-            flex-shrink: 0;
+            position: relative; width: 100%; height: 280px; border-radius: 15px;
+            overflow: hidden; box-shadow: 0 0 50px rgba(16, 124, 16, 0.3);
+            background: #000; margin-bottom: 20px; flex-shrink: 0;
         }
 
         /* The Secret Code Underneath */
         .secret-code {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: linear-gradient(135deg, #111, #1a1a1a);
-            border: 2px solid #333;
+            background: linear-gradient(135deg, #111, #1a1a1a); border: 2px solid #333;
             user-select: none; -webkit-user-select: none;
         }
         .code-label { color: var(--xbox-green); font-family: monospace; margin-bottom: 10px; font-size: 1.2rem; }
-        
-        .code-row {
-            display: flex; align-items: center; gap: 10px;
-        }
+        .code-row { display: flex; align-items: center; gap: 10px; }
         .code-text { 
             color: #fff; font-family: 'Courier New', monospace; 
             font-size: 1.2rem; font-weight: bold; letter-spacing: 2px; border: 1px dashed #555; padding: 10px;
@@ -343,8 +308,7 @@
             position: absolute; bottom: -20px; left: -20px;
             width: 100px; height: auto; z-index: 10;
             filter: drop-shadow(0 0 10px rgba(0,0,0,0.8));
-            pointer-events: auto; /* Clickable */
-            cursor: pointer;
+            pointer-events: auto; cursor: pointer;
             opacity: 0; transition: opacity 1.5s ease-in;
         }
         .note-container.show .cat-decoration { opacity: 1; }
@@ -379,7 +343,7 @@
             100% { opacity: 1; transform: translateY(0) rotate(0deg); }
         }
 
-        /* --- BACKGROUND FALLING WHISPERS --- */
+        /* --- BACKGROUND FALLING WHISPERS (LEFT & RIGHT ONLY) --- */
         .bg-text-container {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 1; overflow: hidden;
@@ -688,11 +652,34 @@
 
         function copyCode() {
             const codeText = document.getElementById('xbox-code-text').innerText;
-            navigator.clipboard.writeText(codeText).then(() => {
-                const btn = document.querySelector('.copy-btn');
+            const btn = document.querySelector('.copy-btn');
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(codeText).then(successCopy).catch(fallbackCopy);
+            } else {
+                fallbackCopy();
+            }
+
+            function fallbackCopy() {
+                const textArea = document.createElement("textarea");
+                textArea.value = codeText;
+                textArea.style.position = "fixed";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    successCopy();
+                } catch (err) {
+                    btn.innerText = "❌";
+                }
+                document.body.removeChild(textArea);
+            }
+
+            function successCopy() {
                 btn.innerText = "✓";
                 setTimeout(() => { btn.innerText = "📋"; }, 2000);
-            });
+            }
         }
 
         function playMeow() {
@@ -802,8 +789,8 @@
                             rooftop.classList.add('visualizer-active');
 
                             const fadeIn = setInterval(() => {
-                                if (musicLvl2.volume < 1.0) {
-                                    musicLvl2.volume = Math.min(1.0, musicLvl2.volume + 0.15);
+                                if (musicLvl2.volume < 0.7) { // Capped at 70%
+                                    musicLvl2.volume = Math.min(0.7, musicLvl2.volume + 0.15);
                                 } else {
                                     clearInterval(fadeIn);
                                 }
@@ -866,13 +853,12 @@
             if (uiLayer.classList.contains('hidden')) {
                 uiLayer.classList.remove('hidden');
                 toggleBtn.innerText = "↓";
-                guideText.style.display = 'none'; // Hide guide
+                guideText.style.display = 'none';
             } else {
                 uiLayer.classList.add('hidden');
                 toggleBtn.innerText = "↑";
                 wipeConstellations(); 
-                
-                guideText.style.display = 'none'; // Ensure hidden
+                guideText.style.display = 'none';
 
                 if (!hasNotifShown) {
                     xboxSfx.play().catch(()=>{});
@@ -891,10 +877,9 @@
         btnYes.addEventListener('click', () => { 
             playSfx(); 
             triggerSuccess(); 
-            // SHOW GUIDE TEXT AFTER CLICKING YES
             setTimeout(() => {
                 guideText.style.display = 'block';
-            }, 2000); // Small delay after text falls
+            }, 2000); 
         });
 
         function triggerSuccess() {
