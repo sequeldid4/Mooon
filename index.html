@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LIFT_SERVICE_FINAL_V41</title>
+    <title>LIFT_SERVICE_FINAL_V42</title>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -206,6 +206,19 @@
             0%, 100% { opacity: 0.5; transform: translateX(-50%) translateY(0); } 
             50% { opacity: 1; transform: translateX(-50%) translateY(-5px); } 
         }
+
+        /* --- RE-OPEN GIFT BUTTON --- */
+        #reopen-gift-btn {
+            position: fixed; top: 20px; right: 20px;
+            width: 50px; height: 50px; background: rgba(16, 124, 16, 0.2);
+            border: 1px solid var(--xbox-green); border-radius: 50%;
+            display: none; /* Hidden until unlocked */
+            align-items: center; justify-content: center;
+            font-size: 24px; cursor: pointer; z-index: 9999;
+            box-shadow: 0 0 15px rgba(16, 124, 16, 0.3);
+            transition: all 0.3s;
+        }
+        #reopen-gift-btn:hover { background: var(--xbox-green); box-shadow: 0 0 25px var(--xbox-green); transform: scale(1.1); }
 
         /* --- XBOX NOTIFICATION (TOP RIGHT) --- */
         #xbox-notification {
@@ -469,6 +482,8 @@
         
         <div class="railing"></div>
 
+        <div id="reopen-gift-btn" onclick="openGift()">🎁</div>
+
         <div id="xbox-notification" onclick="openGift()">
             <div class="notif-icon-circle">
                 <span class="notif-trophy">🏆</span>
@@ -573,6 +588,7 @@
         const controls = document.getElementById('controls');
         
         const xboxNotification = document.getElementById('xbox-notification');
+        const reopenBtn = document.getElementById('reopen-gift-btn');
         const giftModal = document.getElementById('gift-modal');
         const scratchCardContainer = document.getElementById('scratch-card-container');
         const bgTextContainer = document.getElementById('bgTextContainer');
@@ -589,6 +605,25 @@
         const wind = document.getElementById('wind-sfx');
         const meowSfx = document.getElementById('meow-sfx');
 
+        // AUDIO CONTEXT FOR GAIN (BOOST MEOW)
+        let audioCtx;
+        let meowSource;
+        let meowGain;
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                meowSource = audioCtx.createMediaElementSource(meowSfx);
+                meowGain = audioCtx.createGain();
+                meowGain.gain.value = 2.5; // BOOST VOLUME 250%
+                meowSource.connect(meowGain);
+                meowGain.connect(audioCtx.destination);
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
         // PLAYLIST
         const playlist = ['song1.mp3', 'song2.mp3', 'song3.mp3'];
         let currentTrackIndex = 0;
@@ -602,6 +637,7 @@
         let drawingStarted = false;
         let noButtonRunning = true; 
         let hasNotifShown = false;
+        let giftUnlocked = false; // Tracks if gift was ever opened
         let whisperInterval = null; 
 
         // BIGGER HEART SHAPE POINTS
@@ -635,7 +671,9 @@
         }
         
         function openGift() {
+            giftUnlocked = true;
             xboxNotification.classList.remove('show');
+            reopenBtn.style.display = 'none'; // Hide small button while modal is open
             giftModal.classList.add('active');
             setTimeout(initCanvas, 100);
         }
@@ -648,6 +686,9 @@
 
         function closeGift() {
             giftModal.classList.remove('active');
+            if(giftUnlocked) {
+                reopenBtn.style.display = 'flex'; // Show small button
+            }
         }
 
         function copyCode() {
@@ -683,14 +724,31 @@
         }
 
         function playMeow() {
+            initAudioContext(); // Ensure Audio Context is active
+            
+            // DUCK MUSIC
+            const currentVol = musicLvl2.volume;
+            musicLvl2.volume = Math.max(0, currentVol - 0.4); 
+
             meowSfx.currentTime = 0;
             meowSfx.play().catch(()=>{});
+
+            // RESTORE MUSIC
+            setTimeout(() => {
+                const restore = setInterval(() => {
+                    if (musicLvl2.volume < currentVol) {
+                        musicLvl2.volume = Math.min(currentVol, musicLvl2.volume + 0.05);
+                    } else {
+                        clearInterval(restore);
+                    }
+                }, 100);
+            }, 1000);
         }
 
         // Close on background click
         giftModal.addEventListener('click', (e) => {
             if(e.target === giftModal) {
-                giftModal.classList.remove('active');
+                closeGift();
             }
         });
 
@@ -789,7 +847,7 @@
                             rooftop.classList.add('visualizer-active');
 
                             const fadeIn = setInterval(() => {
-                                if (musicLvl2.volume < 0.7) { // Capped at 70%
+                                if (musicLvl2.volume < 0.7) { 
                                     musicLvl2.volume = Math.min(0.7, musicLvl2.volume + 0.15);
                                 } else {
                                     clearInterval(fadeIn);
