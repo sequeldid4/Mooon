@@ -272,21 +272,37 @@
         .secret-code {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: linear-gradient(135deg, #111, #1a1a1a); border: 2px solid #333;
+            background: linear-gradient(135deg, #fff5f7 0%, #f0faf0 50%, #fff8f0 100%);
+            border: 2px solid #f9c6d0;
             user-select: none; -webkit-user-select: none;
+            gap: 8px;
         }
-        .code-label { color: var(--xbox-green); font-family: monospace; margin-bottom: 10px; font-size: 1.2rem; }
+        .code-flowers-top {
+            font-size: 1.6rem; letter-spacing: 4px; opacity: 0.85;
+            line-height: 1;
+        }
+        .code-label { 
+            color: #c0496a; font-family: 'Dancing Script', cursive; 
+            font-size: 2.2rem; font-weight: bold; margin: 0;
+            text-shadow: 0 1px 4px rgba(192,73,106,0.15);
+        }
         .code-row { display: flex; align-items: center; gap: 10px; }
         .code-text { 
-            color: #fff; font-family: 'Courier New', monospace; 
-            font-size: 1.2rem; font-weight: bold; letter-spacing: 2px; border: 1px dashed #555; padding: 10px;
+            color: #2d6a2d; font-family: 'Caveat', cursive; 
+            font-size: 1.3rem; font-weight: bold; letter-spacing: 1px; 
+            border: 1.5px dashed #a8d5a2; padding: 8px 14px;
+            background: rgba(255,255,255,0.7); border-radius: 8px;
         }
         .copy-btn {
-            background: #222; border: 1px solid #444; color: #fff;
+            background: #f9c6d0; border: 1px solid #e88fa3; color: #7a1a32;
             padding: 8px; cursor: pointer; border-radius: 5px; font-size: 1rem;
             transition: all 0.2s; pointer-events: auto;
         }
-        .copy-btn:active { background: var(--xbox-green); border-color: var(--xbox-green); }
+        .copy-btn:active { background: #e88fa3; border-color: #c0496a; }
+        .code-flowers-bottom {
+            font-size: 1.2rem; letter-spacing: 6px; opacity: 0.7;
+            line-height: 1;
+        }
 
         #scratch-canvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -526,11 +542,9 @@
         <div class="modal-content-wrapper">
             <div id="scratch-card-container">
                 <div class="secret-code">
-                    <div class="code-label">XBOX GAME PASS</div>
-                    <div class="code-row">
-                        <div class="code-text" id="xbox-code-text">XXXX-XXXX-XXXX-XXXX</div>
-                        <button class="copy-btn" onclick="copyCode()">📋</button>
-                    </div>
+                    <div class="code-flowers-top">🌸🌿🌺🌿🌸</div>
+                    <div class="code-label">How are uu</div>
+                    <div class="code-flowers-bottom">🌼🌷🌻🌷🌼</div>
                 </div>
                 <canvas id="scratch-canvas"></canvas>
             </div>
@@ -666,7 +680,8 @@
 
         // --- SCRATCH CARD INIT ---
         const xboxImg = new Image();
-        xboxImg.src = 'giftcard.png'; 
+        xboxImg.src = 'giftcard.png';
+        xboxImg.onload = () => {}; // preload
         
         function initCanvas() {
             canvas.width = scratchCardContainer.offsetWidth;
@@ -674,9 +689,9 @@
             if (xboxImg.complete && xboxImg.naturalHeight !== 0) {
                 ctx.drawImage(xboxImg, 0, 0, canvas.width, canvas.height);
             } else {
-                ctx.fillStyle = "#107c10"; ctx.fillRect(0,0,canvas.width, canvas.height);
-                ctx.font = "bold 20px monospace"; ctx.fillStyle = "white"; ctx.textAlign = "center";
-                ctx.fillText("SCRATCH ME", canvas.width / 2, canvas.height / 2);
+                ctx.fillStyle = "#f9c6d0"; ctx.fillRect(0,0,canvas.width, canvas.height);
+                ctx.font = "bold 28px 'Dancing Script', cursive"; ctx.fillStyle = "#c0496a"; ctx.textAlign = "center";
+                ctx.fillText("🌸 scratch me 🌸", canvas.width / 2, canvas.height / 2);
             }
         }
         
