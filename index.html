@@ -173,13 +173,13 @@
         /* --- CONSTELLATION SVG LAYER --- */
         #constellation-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 3; pointer-events: none; 
+            z-index: 500; pointer-events: none; 
         }
         
         .star-node {
             position: absolute; width: 6px; height: 6px; background: #fff; border-radius: 50%;
             box-shadow: 0 0 10px #fff, 0 0 20px #fff; transform: translate(-50%, -50%);
-            animation: twinkle 2s infinite; z-index: 4; pointer-events: none;
+            animation: twinkle 2s infinite; z-index: 501; pointer-events: none;
         }
         @keyframes twinkle {
             0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
@@ -479,18 +479,6 @@
         <div class="moon"></div>
         <div class="city"></div>
         
-        <svg id="constellation-layer" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <filter id="glow">
-                    <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                    <feMerge>
-                        <feMergeNode in="coloredBlur"/>
-                        <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                </filter>
-            </defs>
-        </svg>
-        
         <div class="railing"></div>
 
         <div id="ui-layer">
@@ -507,6 +495,18 @@
             <div class="control-btn" onclick="undoConstellation()">↺</div>
             <div class="control-btn" id="toggleBtn" onclick="toggleUI()">↓</div>
         </div>
+
+        <svg id="constellation-layer" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <filter id="glow">
+                    <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+        </svg>
 
     </div>
 
