@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LIFT_TO_THE_MOON</title>
+    <title>LIFT_SERVICE_FINAL_V47</title>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -129,7 +129,7 @@
         .rooftop-scene {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(to bottom, #020205 0%, #1a0505 100%);
-            z-index: 1; display: none; overflow: hidden; 
+            z-index: 1; display: none;
         }
 
         .moon {
@@ -190,6 +190,7 @@
         #ui-layer {
             position: absolute; width: 100%; height: 100%; top: 0; left: 0;
             z-index: 20; transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            pointer-events: none; 
         }
         #ui-layer.hidden {
             transform: translateY(100vh); 
@@ -197,11 +198,15 @@
 
         /* --- GUIDE TEXT (POINTER) --- */
         #guide-text {
-            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+            position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
             color: #fff; font-family: 'Courier New', monospace; font-size: 1.2rem;
             font-weight: bold; animation: pulse-guide 1s infinite;
-            display: none; pointer-events: none; text-shadow: 0 0 10px #00ff41; z-index: 30;
+            display: none; text-shadow: 0 0 10px #00ff41; z-index: 150;
+            cursor: pointer; pointer-events: auto; 
+            padding: 10px; background: rgba(0, 255, 65, 0.1); border-radius: 8px;
+            border: 1px solid rgba(0, 255, 65, 0.3);
         }
+        #guide-text:hover { background: rgba(0, 255, 65, 0.3); }
         @keyframes pulse-guide { 
             0%, 100% { opacity: 0.5; transform: translateX(-50%) translateY(0); } 
             50% { opacity: 1; transform: translateX(-50%) translateY(-5px); } 
@@ -212,11 +217,10 @@
             position: fixed; top: 20px; right: 20px;
             width: 50px; height: 50px; background: rgba(16, 124, 16, 0.2);
             border: 1px solid var(--xbox-green); border-radius: 50%;
-            display: none; /* Hidden until unlocked */
-            align-items: center; justify-content: center;
+            display: none; align-items: center; justify-content: center;
             font-size: 24px; cursor: pointer; z-index: 9999;
             box-shadow: 0 0 15px rgba(16, 124, 16, 0.3);
-            transition: all 0.3s;
+            transition: all 0.3s; pointer-events: auto;
         }
         #reopen-gift-btn:hover { background: var(--xbox-green); box-shadow: 0 0 25px var(--xbox-green); transform: scale(1.1); }
 
@@ -227,9 +231,9 @@
             display: flex; align-items: center; border-radius: 32px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 9999;
             cursor: pointer; transition: right 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 1px solid #333;
+            border: 1px solid #333; pointer-events: none;
         }
-        #xbox-notification.show { right: 20px; }
+        #xbox-notification.show { right: 20px; pointer-events: auto; }
         
         .notif-icon-circle {
             width: 40px; height: 40px; background: var(--xbox-green); border-radius: 50%;
@@ -254,7 +258,9 @@
         .modal-content-wrapper {
             display: flex; flex-direction: column; align-items: center;
             width: 90%; max-width: 500px; padding: 20px 0; position: relative;
+            pointer-events: none;
         }
+        #gift-modal.active .modal-content-wrapper { pointer-events: auto; }
 
         /* SCRATCH CARD */
         #scratch-card-container {
@@ -263,7 +269,6 @@
             background: #000; margin-bottom: 20px; flex-shrink: 0;
         }
 
-        /* The Secret Code Underneath */
         .secret-code {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -279,20 +284,20 @@
         .copy-btn {
             background: #222; border: 1px solid #444; color: #fff;
             padding: 8px; cursor: pointer; border-radius: 5px; font-size: 1rem;
-            transition: all 0.2s;
+            transition: all 0.2s; pointer-events: auto;
         }
         .copy-btn:active { background: var(--xbox-green); border-color: var(--xbox-green); }
 
         #scratch-canvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 2; cursor: pointer; touch-action: none;
+            z-index: 2; cursor: pointer; touch-action: none; pointer-events: auto;
         }
 
         /* --- LETTER ICON --- */
         #letter-icon {
             font-size: 3rem; cursor: pointer; animation: bounce 2s infinite;
             text-align: center; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.5);
-            margin-top: 10px;
+            margin-top: 10px; pointer-events: auto;
         }
         @keyframes bounce {
             0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
@@ -303,9 +308,10 @@
         .note-container {
             position: relative; width: 100%; background: rgba(255, 255, 255, 0.05);
             padding: 25px; border-radius: 10px; border-left: 2px solid var(--xbox-green);
-            margin-top: 15px; display: none; opacity: 0; transition: opacity 1s ease-in;
+            margin-top: 15px; display: block; opacity: 0; transition: opacity 1s ease-in;
+            pointer-events: none; max-height: 0; overflow: hidden;
         }
-        .note-container.show { display: block; opacity: 1; }
+        .note-container.show { opacity: 1; pointer-events: auto; max-height: 1000px; overflow: visible; }
 
         .note-text {
             font-family: 'Caveat', 'Brush Script MT', cursive; color: #e0e0e0;
@@ -333,10 +339,11 @@
             font-family: 'Courier New', monospace; font-weight: bold;
             cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
             transition: all 0.3s; box-shadow: 0 0 10px rgba(16, 124, 16, 0.2);
+            pointer-events: auto;
         }
         .back-btn:hover { background: var(--xbox-green); color: #000; box-shadow: 0 0 20px var(--xbox-green); }
 
-        /* --- FALLING TEXT --- */
+        /* --- MAIN FALLING TEXT (Centered Sentence) --- */
         .falling-text-container {
             position: absolute; top: 30%; width: 100%; text-align: center;
             display: flex; justify-content: center; flex-wrap: wrap; gap: 15px;
@@ -344,10 +351,11 @@
         }
 
         .word {
-            font-family: 'Dancing Script', cursive; /* AESTHETIC FONT */
+            font-family: 'Dancing Script', cursive; 
             font-size: 3rem; color: #fff; opacity: 0; position: relative;
             text-shadow: 0 0 5px #fff, 0 0 20px #ff0040;
-            transform: translateY(-50vh); 
+            transform: translateY(-50vh);
+            pointer-events: none;
         }
         .word.fall { animation: fall-in 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes fall-in {
@@ -356,13 +364,13 @@
             100% { opacity: 1; transform: translateY(0) rotate(0deg); }
         }
 
-        /* --- BACKGROUND FALLING WHISPERS (ALL OVER) --- */
+        /* --- BACKGROUND FALLING WHISPERS --- */
         .bg-text-container {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 1; overflow: hidden;
         }
         .bg-whisper {
-            position: absolute; font-family: 'Dancing Script', cursive; /* AESTHETIC FONT */
+            position: absolute; font-family: 'Dancing Script', cursive; 
             color: rgba(255, 255, 255, 0.4); text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
             white-space: nowrap; opacity: 0; font-size: 1.5rem;
             animation: whisper-fall linear forwards;
@@ -377,10 +385,11 @@
         .choice-container {
             position: absolute; bottom: 20%; width: 100%; 
             display: flex; justify-content: center; gap: 100px;
+            pointer-events: none;
         }
         .aesthetic-choice {
             background: transparent; border: none;
-            font-family: 'Dancing Script', cursive; /* AESTHETIC FONT */
+            font-family: 'Dancing Script', cursive; 
             font-size: 3.5rem; cursor: pointer; transition: all 0.3s; position: relative;
             text-transform: lowercase; opacity: 0; animation: float-in 2s forwards;
             pointer-events: auto;
@@ -396,15 +405,17 @@
         /* --- BOTTOM CONTROLS --- */
         .controls-wrapper {
             position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            display: none; z-index: 100; display: flex; gap: 40px;
+            display: flex; gap: 40px; z-index: 99999; 
+            pointer-events: none; 
         }
         .control-btn {
-            color: rgba(255,255,255,0.3); font-size: 2rem; cursor: pointer;
+            color: rgba(255,255,255,0.4); font-size: 2rem; cursor: pointer;
             font-family: monospace; transition: all 0.3s; user-select: none;
+            pointer-events: auto; 
+            padding: 15px 25px; 
+            background: transparent; border: none; box-shadow: none;
         }
-        .control-btn:hover { color: #fff; text-shadow: 0 0 10px #fff; }
-        #toggleBtn { animation: pulse-arrow 2s infinite; }
-        @keyframes pulse-arrow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+        .control-btn:hover { color: #fff; text-shadow: 0 0 10px #fff; background: transparent; }
 
         /* --- HEART EXPLOSION --- */
         .explosion-heart {
@@ -468,7 +479,7 @@
         <div class="moon"></div>
         <div class="city"></div>
         
-        <svg id="constellation-layer">
+        <svg id="constellation-layer" xmlns="http://www.w3.org/2000/svg">
             <defs>
                 <filter id="glow">
                     <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
@@ -482,73 +493,63 @@
         
         <div class="railing"></div>
 
-        <div id="reopen-gift-btn" onclick="openGift()">🎁</div>
-
-        <div id="xbox-notification" onclick="openGift()">
-            <div class="notif-icon-circle">
-                <span class="notif-trophy">🏆</span>
-            </div>
-            <div class="notif-content">
-                <span class="notif-title">ACHIEVEMENT UNLOCKED</span>
-                <span class="notif-sub">Secret Gift Found</span>
-            </div>
-        </div>
-
-        <div id="gift-modal">
-            <div class="modal-content-wrapper">
-                <div id="scratch-card-container">
-                    <div class="secret-code">
-                        <div class="code-label">XBOX GAME PASS</div>
-                        <div class="code-row">
-                            <div class="code-text" id="xbox-code-text">SOMEONE TOOK IT I DONNO WHO , DO I?</div>
-                            <button class="copy-btn" onclick="copyCode()">❤</button>
-                        </div>
-                    </div>
-                    <canvas id="scratch-canvas"></canvas>
-                </div>
-
-                <div id="letter-icon" onclick="showNote()">
-                    📩
-                    <div style="font-size:14px; font-family:'Courier New'; margin-top:5px;">Read Note</div>
-                </div>
-
-                <div class="note-container" id="note">
-                    <img src="cat.png" class="cat-decoration" alt="Cat" onclick="playMeow()">
-                    <div class="note-text">
-                                
-                    When i u said u are not able to play games because of ur pretty laptop , 
-                     <p> i wanted to give a surprise by making u play any game on that pretty laptop of urs ,<p>
-                     <p> i really hope i meet u tomorrow n evryday so plz accept my small gift ☺<p>  
-          
-                               
-
-                               <p>n also U are one of my favourite person <3</p>
-                                <p> i might some times say very less , but just remember that i really admire u</p>
-                                
-                                
-                    </div>
-                    
-                    <div class="note-sig"> -Faizan</div>
-                </div>
-
-                <button class="back-btn" onclick="closeGift()">Back to Roof</button>
-            </div>
-        </div>
-
-        <div    <div class="falling-text-container" id="textContainer"></div>
+        <div id="ui-layer">
+            <div class="falling-text-container" id="textContainer"></div>
             <div class="choice-container" id="choiceBox">
                 <button class="aesthetic-choice" id="btnYes">yes</button>
                 <button class="aesthetic-choice" id="btnNo">no</button>
             </div>
             
-            <div id="guide-text">↓ CLICK TO OPEN ↓</div>
+            <div id="guide-text" onclick="toggleUI()">↓ CLICK TO OPEN ↓</div>
         </div>
         
-        <div class="controls-wrapper" id="controls">
+        <div class="controls-wrapper" id="controls" style="display: none;">
             <div class="control-btn" onclick="undoConstellation()">↺</div>
             <div class="control-btn" id="toggleBtn" onclick="toggleUI()">↓</div>
         </div>
 
+    </div>
+
+    <div id="reopen-gift-btn" onclick="openGift()">🎁</div>
+
+    <div id="xbox-notification" onclick="openGift()">
+        <div class="notif-icon-circle">
+            <span class="notif-trophy">🏆</span>
+        </div>
+        <div class="notif-content">
+            <span class="notif-title">ACHIEVEMENT UNLOCKED</span>
+            <span class="notif-sub">Secret Gift Found</span>
+        </div>
+    </div>
+
+    <div id="gift-modal">
+        <div class="modal-content-wrapper">
+            <div id="scratch-card-container">
+                <div class="secret-code">
+                    <div class="code-label">XBOX GAME PASS</div>
+                    <div class="code-row">
+                        <div class="code-text" id="xbox-code-text">XXXX-XXXX-XXXX-XXXX</div>
+                        <button class="copy-btn" onclick="copyCode()">📋</button>
+                    </div>
+                </div>
+                <canvas id="scratch-canvas"></canvas>
+            </div>
+
+            <div id="letter-icon" onclick="showNote()">
+                📩
+                <div style="font-size:14px; font-family:'Courier New'; margin-top:5px;">Read Note</div>
+            </div>
+
+            <div class="note-container" id="note">
+                <img src="cat.png" class="cat-decoration" alt="Cat" onclick="playMeow()">
+                <div class="note-text">
+                    I hope u like it. When u said u are not able to play games because of ur pretty laptop, i wanted to give a surprise by making u play any game on that pretty laptop of urs. Im writing this after wishing u good night. I really hope i meet u tomorrow n everyday like this, but i also get sad sometimes when i get close to someone. It had happened to me whenever i let someone be in my heart n all the time it just dont end well... thats why i didnt talk much, and im not being emotional or something, but i got a fragile heart. Plz from here, if u want to be here u can message me, or else u can just go away accepting my small gift, and we never meet again....
+                </div>
+                <div class="note-sig">bye -Faizan</div>
+            </div>
+
+            <button class="back-btn" onclick="closeGift()">Back to Roof</button>
+        </div>
     </div>
 
     <div class="marquee-container" id="marqueeBox">
@@ -625,7 +626,7 @@
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 meowSource = audioCtx.createMediaElementSource(meowSfx);
                 meowGain = audioCtx.createGain();
-                meowGain.gain.value = 2.5; // BOOST VOLUME 250%
+                meowGain.gain.value = 2.5; 
                 meowSource.connect(meowGain);
                 meowGain.connect(audioCtx.destination);
             }
@@ -634,37 +635,33 @@
             }
         }
 
-        // PLAYLIST
         const playlist = ['song1.mp3', 'song2.mp3', 'song3.mp3'];
         let currentTrackIndex = 0;
 
-        // Constellation Variables
+        // Cleaned up Global State
         const svgLayer = document.getElementById('constellation-layer');
         let lastPoint = null;
         let starHistory = [];
         
-        let heartIndex = 0;
         let drawingStarted = false;
         let noButtonRunning = true; 
         let hasNotifShown = false;
         let giftUnlocked = false; 
         let whisperInterval = null; 
 
-        // BIGGER HEART SHAPE POINTS
+        // The exact heart coordinates
         const heartPoints = [
             {x: 0, y: -0.3}, {x: -0.3, y: -0.55}, {x: -0.55, y: -0.15},
             {x: 0, y: 0.55}, {x: 0.55, y: -0.15}, {x: 0.3, y: -0.55}, {x: 0, y: -0.3}
         ];
 
         const symbols = ['✧', '⋆', '♡', '☾', '☁', '†', '⚕', '⚘', '⚚', '★', '☆', '✦'];
-        const phrases = ["Im", "glad", "that", "we’re", "not just", "randoms", "right?"];
+        const phrases = ["im", "glad", "that", "u r", "here", "with", "me"];
         
         const bgWhispers = [
-            "What time is it rn?", "Oumaima?", "Hows the song?", 
+            "What time is it rn?", "Oumaima?", "Hows the song?", "plzzzz",
             "i want to learn German!", "tell me more abt u", "u happy:)", 
-            "no way u r Oumaima!", "Wht am i doin rn", "Im a MAN!",
-            "made for huawei phones", "Oumaima?" , "r u fr?" , "Aaaa.." , "will it work?",
-            "Bombastic eyes ", "no way u r Oumaima!", "tell me more abt u", "i had to say somethin2u", "would u be here?","my therapist:)"
+            "Dont be sad:(", "no way u r Oumaima!", "Wht am i doin rn ", "Im a MAN"
         ];
 
         // --- SCRATCH CARD INIT ---
@@ -678,14 +675,15 @@
                 ctx.drawImage(xboxImg, 0, 0, canvas.width, canvas.height);
             } else {
                 ctx.fillStyle = "#107c10"; ctx.fillRect(0,0,canvas.width, canvas.height);
-                ctx.font = "20px monospace"; ctx.fillStyle = "white"; ctx.fillText("SCRATCH ME", 50, 100);
+                ctx.font = "bold 20px monospace"; ctx.fillStyle = "white"; ctx.textAlign = "center";
+                ctx.fillText("SCRATCH ME", canvas.width / 2, canvas.height / 2);
             }
         }
         
         function openGift() {
             giftUnlocked = true;
             xboxNotification.classList.remove('show');
-            reopenBtn.style.display = 'none'; // Hide small button while modal is open
+            reopenBtn.style.display = 'none'; 
             giftModal.classList.add('active');
             setTimeout(initCanvas, 100);
         }
@@ -699,7 +697,7 @@
         function closeGift() {
             giftModal.classList.remove('active');
             if(giftUnlocked) {
-                reopenBtn.style.display = 'flex'; // Show small button
+                reopenBtn.style.display = 'flex'; 
             }
         }
 
@@ -736,16 +734,13 @@
         }
 
         function playMeow() {
-            initAudioContext(); // Ensure Audio Context is active
-            
-            // DUCK MUSIC
+            initAudioContext(); 
             const currentVol = musicLvl2.volume;
             musicLvl2.volume = Math.max(0, currentVol - 0.4); 
 
             meowSfx.currentTime = 0;
             meowSfx.play().catch(()=>{});
 
-            // RESTORE MUSIC
             setTimeout(() => {
                 const restore = setInterval(() => {
                     if (musicLvl2.volume < currentVol) {
@@ -757,11 +752,8 @@
             }, 1000);
         }
 
-        // Close on background click
         giftModal.addEventListener('click', (e) => {
-            if(e.target === giftModal) {
-                closeGift();
-            }
+            if(e.target === giftModal) { closeGift(); }
         });
 
         // --- SCRATCH LOGIC ---
@@ -787,12 +779,12 @@
         canvas.addEventListener('mousedown', () => isScratching = true);
         canvas.addEventListener('mouseup', () => isScratching = false);
         canvas.addEventListener('mousemove', scratch);
-        
         canvas.addEventListener('touchstart', (e) => { isScratching = true; e.preventDefault(); }, { passive: false });
         canvas.addEventListener('touchend', () => isScratching = false);
         canvas.addEventListener('touchmove', scratch, { passive: false });
 
 
+        // --- ELEVATOR PANEL LOGIC ---
         function initMusic() {
             if (!musicStarted) {
                 musicLvl1.volume = 0.4;
@@ -841,7 +833,8 @@
             setTimeout(() => {
                 doorL.classList.add('closed'); doorR.classList.add('closed');
                 setTimeout(() => {
-                    panel.style.display = "none"; 
+                    panel.style.opacity = "0"; 
+                    setTimeout(() => { panel.style.display = "none"; }, 1000);
                     lvl2Msg.style.opacity = "1"; 
                     
                     const fadeAudio = setInterval(() => {
@@ -888,12 +881,12 @@
             musicLvl2.play().catch(() => {});
         });
 
+        // --- LEVEL 2 TEXT LOGIC ---
         function triggerFallingText() {
             phrases.forEach((text, index) => {
                 setTimeout(() => {
                     const span = document.createElement('div');
                     span.classList.add('word'); span.innerText = text;
-                    // REVERTED: Normal positioning (flexbox handled by CSS)
                     textContainer.appendChild(span);
                     void span.offsetWidth; span.classList.add('fall');
                 }, index * 800); 
@@ -911,9 +904,7 @@
             span.classList.add('bg-whisper');
             span.innerText = text;
             
-            // Randomly position anywhere from 0 to 90%
             span.style.left = (Math.random() * 90) + '%';
-            
             span.style.animationDuration = (Math.random() * 10 + 20) + 's'; 
             bgTextContainer.appendChild(span);
             setTimeout(() => { span.remove(); }, 35000);
@@ -931,10 +922,17 @@
                 toggleBtn.innerText = "↑";
                 wipeConstellations(); 
                 guideText.style.display = 'none';
+                btnNo.style.display = "none";
 
                 if (!hasNotifShown) {
                     xboxSfx.play().catch(()=>{});
                     setTimeout(() => { xboxNotification.classList.add('show'); }, 500);
+                    setTimeout(() => { 
+                        if (xboxNotification.classList.contains('show')) {
+                            xboxNotification.classList.remove('show');
+                            reopenBtn.style.display = 'flex';
+                        }
+                    }, 5500);
                     hasNotifShown = true;
                 }
 
@@ -945,19 +943,18 @@
             }
         }
 
-        // --- SUCCESS SEQUENCE ---
+        // --- "YES" BUTTON SUCCESS ---
         btnYes.addEventListener('click', () => { 
             playSfx(); 
             triggerSuccess(); 
-            setTimeout(() => {
-                guideText.style.display = 'block';
-            }, 2000); 
+            setTimeout(() => { guideText.style.display = 'block'; }, 2000); 
         });
 
         function triggerSuccess() {
             for (let i = 0; i < 50; i++) { createExplosionHeart(); }
-            textContainer.innerHTML = "<div class='word fall' style='color: #fff0f5; text-shadow: 0 0 10px #ff99ac, 0 0 20px #ff0040; font-size: 3rem;'>I KNEW IT <3</div>";
+            textContainer.innerHTML = "<div class='word fall' style='color: #fff0f5; text-shadow: 0 0 10px #ff99ac, 0 0 20px #ff0040; font-size: 3rem; pointer-events:none;'>I KNEW IT <3</div>";
             choiceBox.style.display = "none";
+            btnNo.style.display = "none";
         }
 
         function createExplosionHeart() {
@@ -969,71 +966,65 @@
             document.body.appendChild(heart); setTimeout(() => heart.remove(), 1000);
         }
 
-        // --- CONSTELLATION LOGIC ---
-        function wipeConstellations() {
-            starHistory.forEach(item => {
-                item.star.remove();
-                if(item.line) item.line.remove();
-            });
-            starHistory = [];
-            lastPoint = null;
-        }
+        // --- "NO" BUTTON AUTO-DRAW LOGIC (CLEANED) ---
+        function moveNoButton() {
+            if (!noButtonRunning || drawingStarted) return;
+            drawingStarted = true; // Locks the function so it doesn't trigger twice
+            
+            // Get dimensions once before moving
+            const rect = btnNo.getBoundingClientRect();
+            const btnWidth = rect.width;
+            const btnHeight = rect.height;
+            
+            // Instantly fix the layout so positioning math is perfect
+            btnNo.style.width = btnWidth + 'px';
+            btnNo.style.height = btnHeight + 'px';
+            btnNo.style.position = 'fixed';
+            
+            let pointIndex = 0;
 
-        function undoConstellation() {
-            playSfx();
-            if (starHistory.length === 0) return;
-            const lastAction = starHistory.pop();
-            lastAction.star.remove();
-            if (lastAction.line) lastAction.line.remove();
-            if (starHistory.length > 0) {
-                const prev = starHistory[starHistory.length - 1];
-                lastPoint = { x: prev.x, y: prev.y };
-            } else {
-                lastPoint = null;
+            function jumpToNext() {
+                if (pointIndex >= heartPoints.length) {
+                    noButtonRunning = false; 
+                    btnNo.style.cursor = "pointer"; // Make it fully clickable
+                    return; 
+                }
+
+                const p = heartPoints[pointIndex];
+                const scale = Math.min(window.innerWidth, window.innerHeight) * 0.8; 
+                const offsetX = window.innerWidth / 2; 
+                const offsetY = window.innerHeight / 2;
+                
+                // Target coordinates for the top-left of the button
+                const tX = (p.x * scale) + offsetX - (btnWidth/2);
+                const tY = (p.y * scale) + offsetY - (btnHeight/2);
+                
+                btnNo.style.left = tX + 'px'; 
+                btnNo.style.top = tY + 'px';
+                
+                // The center of the star should be the center of the button
+                const centerX = tX + (btnWidth / 2);
+                const centerY = tY + (btnHeight / 2);
+
+                createStarAt(centerX, centerY, pointIndex > 0); 
+                
+                const jumpSfx = sfx.cloneNode();
+                jumpSfx.volume = 0.4;
+                jumpSfx.playbackRate = 1.2 + Math.random() * 0.5; 
+                jumpSfx.play().catch(()=>{});
+
+                pointIndex++;
+                setTimeout(jumpToNext, 450); // Matches the CSS transition exactly
             }
+
+            jumpToNext();
         }
 
-        // --- BUTTON INTERACTION ---
         btnNo.addEventListener('mouseover', moveNoButton);
         btnNo.addEventListener('touchstart', (e) => { e.preventDefault(); moveNoButton(); });
         btnNo.addEventListener('click', () => { if (!noButtonRunning) triggerSuccess(); else moveNoButton(); });
 
-        function moveNoButton() {
-            if (!noButtonRunning) return;
-            
-            const jumpSfx = sfx.cloneNode();
-            jumpSfx.volume = 0.4;
-            jumpSfx.playbackRate = 1.2 + Math.random() * 0.5; 
-            jumpSfx.play().catch(()=>{});
-
-            const scale = Math.min(window.innerWidth, window.innerHeight) * 0.8; 
-            const offsetX = window.innerWidth / 2; const offsetY = window.innerHeight / 2;
-            const rect = btnNo.getBoundingClientRect();
-
-            if (!drawingStarted) {
-                drawingStarted = true;
-                const p0 = heartPoints[0];
-                const tX = (p0.x * scale) + offsetX - (rect.width/2);
-                const tY = (p0.y * scale) + offsetY - (rect.height/2);
-                btnNo.style.position = 'fixed'; btnNo.style.left = tX + 'px'; btnNo.style.top = tY + 'px';
-                lastPoint = { x: tX + rect.width/2, y: tY + rect.height/2 };
-                createStarAt(lastPoint.x, lastPoint.y, false); 
-                heartIndex = 1; return;
-            }
-
-            if (heartIndex >= heartPoints.length) {
-                noButtonRunning = false; btnNo.style.cursor = "pointer"; return;
-            }
-
-            const p = heartPoints[heartIndex];
-            const tX = (p.x * scale) + offsetX - (rect.width/2);
-            const tY = (p.y * scale) + offsetY - (rect.height/2);
-            btnNo.style.position = 'fixed'; btnNo.style.left = tX + 'px'; btnNo.style.top = tY + 'px';
-            const newCenter = { x: tX + rect.width/2, y: tY + rect.height/2 };
-            createStarAt(newCenter.x, newCenter.y, true); 
-            heartIndex++;
-        }
-
+        // --- CONSTELLATION DRAWING ---
         function createStarAt(x, y, drawLine) {
             const starSfx = sfx.cloneNode(); starSfx.volume = 0.3; 
             starSfx.playbackRate = 0.5 + Math.random(); starSfx.play().catch(()=>{});
@@ -1055,16 +1046,38 @@
             lastPoint = { x: x, y: y };
         }
 
-        // --- MANUAL DRAWING ---
+        function wipeConstellations() {
+            starHistory.forEach(item => { item.star.remove(); if(item.line) item.line.remove(); });
+            starHistory = []; lastPoint = null;
+        }
+
+        function undoConstellation() {
+            playSfx();
+            if (starHistory.length === 0) return;
+            const lastAction = starHistory.pop();
+            lastAction.star.remove(); if (lastAction.line) lastAction.line.remove();
+            if (starHistory.length > 0) {
+                const prev = starHistory[starHistory.length - 1];
+                lastPoint = { x: prev.x, y: prev.y };
+            } else { lastPoint = null; }
+        }
+
         rooftop.addEventListener('mousedown', (e) => {
-            if(e.target.closest('.control-btn') || e.target.closest('#xbox-notification') || e.target.closest('#gift-modal') || e.target.tagName === 'BUTTON') return;
+            if(e.target.closest('.control-btn') || e.target.closest('#guide-text') || e.target.closest('#xbox-notification') || e.target.closest('#gift-modal') || e.target.tagName === 'BUTTON' || e.target.closest('#reopen-gift-btn')) return;
             createStarAt(e.clientX, e.clientY, !!lastPoint);
         });
+
+        rooftop.addEventListener('touchstart', (e) => {
+            if(e.target.closest('.control-btn') || e.target.closest('#guide-text') || e.target.closest('#xbox-notification') || e.target.closest('#gift-modal') || e.target.tagName === 'BUTTON' || e.target.closest('#reopen-gift-btn')) return;
+            const t = e.touches[0];
+            createStarAt(t.clientX, t.clientY, !!lastPoint);
+        }, { passive: true });
 
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'z') { undoConstellation(); }
         });
 
+        // --- BACKGROUND MAGIC ---
         function handleMove(e) {
             if (!isLevel2) return;
             const x = e.touches ? e.touches[0].clientX : e.clientX;
@@ -1086,13 +1099,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
