@@ -283,6 +283,10 @@
             border: 2px solid #f9c6d0;
             user-select: none; -webkit-user-select: none;
             gap: 8px;
+            /* New properties added below to fix overflow */
+            box-sizing: border-box; 
+            padding: 20px; 
+            text-align: center; 
         }
         .code-flowers-top {
             font-size: 1.6rem; letter-spacing: 4px; opacity: 0.85;
@@ -292,6 +296,11 @@
             color: #c0496a; font-family: 'Dancing Script', cursive; 
             font-size: 2.2rem; font-weight: bold; margin: 0;
             text-shadow: 0 1px 4px rgba(192,73,106,0.15);
+            /* New properties added below to force text wrapping */
+            overflow-wrap: break-word;
+            word-break: break-word;
+            white-space: normal;
+            max-width: 100%; 
         }
         .code-row { display: flex; align-items: center; gap: 10px; }
         .code-text { 
@@ -306,8 +315,8 @@
             transition: all 0.2s; pointer-events: auto;
         }
         .copy-btn:active { background: #e88fa3; border-color: #c0496a; }
-        .code-flowers-bottom {
-            font-size: 1.2rem; letter-spacing: 6px; opacity: 0.7;
+        .code-flowers-top {
+            font-size: 1.6rem; letter-spacing: 4px; opacity: 0.85;
             line-height: 1;
         }
 
